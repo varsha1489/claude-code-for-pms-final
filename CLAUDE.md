@@ -100,10 +100,39 @@ before I could answer".
   "just fell out" of the config. Wen was on PTO and never replied.
 - **Priya's view** is that the drop is mostly seasonal ("August is always soft") and
   should recover in September, and she warns against relitigating or reverting
-  4.2. This is **a hypothesis, not a finding.** No one has looked at real numbers,
-  and September data should now exist to test it.
+  4.2. This was **a hypothesis, not a finding** — and the one data file in the repo
+  doesn't support it (see below). September/October data still isn't in the repo.
 - Marcus deliberately held off on conclusions so the new PM could look first.
   A team regroup on 4.2 is pending.
+
+### First look at the data (14 Oct 2026)
+`00-rook/data/callout-history.csv` — weekly `pings_sent`/`pings_taken` per
+responder, 29 Jun–31 Aug 2026. Not yet confirmed as Ravi's official export;
+that's the first thing to ask him (see `notes/ravi-1-1-agenda.md`).
+- **The "September rebound" in the pooled rate is an artifact.** Pooled weekly
+  acceptance goes 0.77 → 0.54 → 0.73, which looks like recovery. But 4 of 16
+  responders (Farlight/Linda Pruitt, Meteor Mite/Kip, The Undertow/Desmond Okafor,
+  Vesper/Aunt Dot) collapsed from ~12 offers/week to 0–1 and dropped out of the
+  denominator. The other 12 took on more volume and still sit below their pre-4.2
+  rate. The unweighted per-responder average is 0.59, not 0.73 — ask Ravi which
+  one is "the" headline.
+- **Tickets and the data disagree on who's affected.** 11 responders were
+  reported quiet in tickets; only the 2 above (Farlight, The Undertow) actually
+  collapse in the CSV. Nightwell's ticket says nothing in 10 days; the CSV shows
+  her getting 16–21 offers/week throughout. Worth resolving before trusting
+  either source alone.
+- **Acceptance didn't drift seasonally — it stepped down exactly at the 12 Aug
+  release**, while total offers sent stayed flat. That cuts against "it's just August."
+- **In the routing code** (`00-rook/code/dispatch-routing/`), a decline and a
+  timeout are scored identically, and the penalty (0.12, vs. a 0.08 credit for
+  accepting) never decays — a 2019 TODO from Wen flags this exact question and
+  was never resolved. Combined with the shorter timeout, this is the likely
+  mechanism for why a few responders get frozen out, but that's a read of the
+  code, not a tested conclusion.
+- **Possible doc conflict to verify:** `about-rook.pdf` says cover identities are
+  never stored; the glossary says Rook *does* hold them, just with no mapping to
+  a legal identity. Don't rely on either until checked against Security Policy
+  4.1 (not in this repo).
 
 ### Roadmap loose ends (Q3 roadmap, rev. 30 Jun)
 - **Availability Confidence**, a confidence score shown next to stated availability

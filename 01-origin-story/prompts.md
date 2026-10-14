@@ -24,6 +24,40 @@ built from your own questions.
 
 ### 1.
 
+connect to my github repo at https://github.com/varsha1489/claude-code-for-pms-final
+
 ### 2.
 
+is there too much information in the claude.md currently? do we need to consolidate at all at this point?
+
 ### 3.
+
+no don't split
+
+### 4.
+
+commit this
+
+### 5.
+
+yes
+
+### 6.
+
+what are some of the best practices for claude.md in general?
+
+### 7.
+
+What's contradictory or missing, not just in the company documents, but across Rook's wiki, its database, and the files in my repo?
+
+### 8.
+
+I am a new Product Manager that just joined the team. Give me a walkthrough on what is going on with Rook Dispatch? Where should I start?
+
+### 9.
+
+Give me an agenda with talking points on what I should chat with Ravi about?
+
+### 10.
+
+create an agenda doc so I can recall this later
