@@ -134,6 +134,26 @@ that's the first thing to ask him (see `notes/ravi-1-1-agenda.md`).
   a legal identity. Don't rely on either until checked against Security Policy
   4.1 (not in this repo).
 
+### Interview signal check (14 Oct 2026)
+Four console-redesign interviews (`00-rook/feedback/interviews/`, Ambrose, Aunt
+Dot, Halloran, Kip) weren't about 4.2 directly, but three of four brought up
+callouts moving on too fast anyway — unprompted, which is itself worth noting.
+Full triage of all eight themes, sorted by priority with quotes, is in a
+published artifact called **Console Feedback Triage** (ask me to reopen or
+rebuild it; it isn't a file in this repo).
+- Matches the data: 3/4 describe a callout vanishing before the responder
+  could answer. One handler (Ambrose) independently suspects routing favors
+  faster responders over slower ones now — unprompted, and consistent with
+  the known 4.2 weight change.
+- Two handlers (Kip, Aunt Dot) independently noticed the same feast-or-famine
+  pattern — dead quiet some weeks, gone instantly in others — that matches
+  the 4-responders-collapsed finding above.
+- The rest (readability, alert routing, filter persistence, dark mode) is
+  real but unrelated UX debt — don't let it crowd out the 4.2 investigation.
+- Halloran (also runs the gear cage) raised three Supply complaints unprompted
+  — slow/undifferentiated approval queue, field failure reports with no
+  feedback loop, bad catalog search. Not mine to fix; worth passing along.
+
 ### Roadmap loose ends (Q3 roadmap, rev. 30 Jun)
 - **Availability Confidence**, a confidence score shown next to stated availability
   and driven by support escalations, was *committed* for 4.2 but **does not appear in
