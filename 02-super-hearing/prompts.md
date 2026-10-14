@@ -44,3 +44,23 @@ Read everything in 00-rook/feedback/tickets/. Same treatment as before: group th
 ### 7.
 
 does when the ticket was filed impact the synthesis?
+
+### 8.
+
+You've now read both piles. Where do they disagree? What's loud in the interviews but rare in the tickets, and what's all over the tickets that nobody brought up in the interviews?
+
+### 9.
+
+how does this change the 4-5 sentence pov?
+
+### 10.
+
+Going back to the interview synthesis, give me a quick summary what we gleaned from there, then tell me what we gleaned from the ticket synthesis, then summarize how well the data compliment each other and where they differ
+
+### 11.
+
+If I'd only read the interviews, what would I have got wrong?
+
+### 12.
+
+we created a table, how does that table change with some of our recent learnings

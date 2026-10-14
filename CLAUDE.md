@@ -161,6 +161,26 @@ forget: of the 4 collapsed responders, **Meteor Mite and Vesper filed zero
 tickets** — they're only known from interviews. Ticket volume alone would
 have missed Dispatch's two worst cases.
 
+### Pile comparison (15 Oct 2026)
+- Interviews and tickets draw from almost entirely different responders —
+  only Farlight and The Undertow appear in both piles. Neither pile alone
+  would have found the worst cases: tickets-only misses Meteor Mite and
+  Vesper entirely; interviews-only misses that "gone quiet" is the dominant
+  complaint (16 of 25 tickets) and has no dates precise enough to tie the
+  drop to the release rather than to seasonality.
+- Tickets never theorize a cause. The routing-fairness hypothesis exists
+  only because Ambrose said it, unprompted, in an interview.
+- The console UX backlog (dark mode, readability, alert routing, filter
+  persistence) appears in **zero** of the 25 tickets — it's real, but don't
+  weigh it against the 4.2 investigation using ticket volume as the yardstick.
+- `notes/responder-priority-and-pov.md` was revised: raw frequency counts
+  replaced with a corroboration-vs-contradiction framework (sources
+  *agreeing* vs. sources *contradicting* aren't the same kind of evidence),
+  a sourcing error fixed (Farlight has no interview mention — that citation
+  was actually Aunt Dot's account of Vesper), and Captain Vantage
+  reclassified as the key informant behind the routing-fairness theory
+  rather than a casework priority, since his own data shows no issue.
+
 ### Roadmap loose ends (Q3 roadmap, rev. 30 Jun)
 - **Availability Confidence**, a confidence score shown next to stated availability
   and driven by support escalations, was *committed* for 4.2 but **does not appear in
