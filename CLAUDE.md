@@ -154,6 +154,13 @@ rebuild it; it isn't a file in this repo).
   — slow/undifferentiated approval queue, field failure reports with no
   feedback loop, bad catalog search. Not mine to fix; worth passing along.
 
+### Responder priority (15 Oct 2026)
+Full ranked table, the pre/post methodology, and a regroup-ready point of
+view are in `notes/responder-priority-and-pov.md`. The one thing to not
+forget: of the 4 collapsed responders, **Meteor Mite and Vesper filed zero
+tickets** — they're only known from interviews. Ticket volume alone would
+have missed Dispatch's two worst cases.
+
 ### Roadmap loose ends (Q3 roadmap, rev. 30 Jun)
 - **Availability Confidence**, a confidence score shown next to stated availability
   and driven by support escalations, was *committed* for 4.2 but **does not appear in

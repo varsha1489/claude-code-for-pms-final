@@ -36,3 +36,11 @@ Based on the interviews, the trouble with 4.2 is ___
 
 how is this similar/different from this statement,
 Based on the interviews, the trouble with 4.2 is nobody asked about callouts. Three of the four handlers brought them up anyway.
+
+### 6.
+
+Read everything in 00-rook/feedback/tickets/. Same treatment as before: group them, tell me how many are in each group, and quote one line from each.
+
+### 7.
+
+does when the ticket was filed impact the synthesis?
