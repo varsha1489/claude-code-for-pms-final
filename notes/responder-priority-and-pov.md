@@ -339,6 +339,43 @@ an unlucky run of declines/timeouts — rather than one uniform cause.
   dramatic, easier-to-tell "vanished right in front of me" stories (⅓ of
   tickets) pulling attention toward the smaller problem.
 
+## The scoring code, verbatim (16 Oct 2026)
+The exact lines that take points off and put them back on —
+`00-rook/code/dispatch-routing/history.py`, lines 25–39.
+
+**Takes points off:**
+```python
+def record_declined(responder):
+    """They turned it down, or we ran out of time waiting. Score goes
+    down. Same either way — we asked and we didn't get a yes.
+    """
+    _set(responder, recent_acceptance(responder) - DECLINE_PENALTY)
+```
+Fires on *either* an active decline or a timeout — the code treats them as
+the identical event. Score drops by `DECLINE_PENALTY` (0.12). Right above
+it, Wen's 2019 comment asks whether this should fade over time, weighs both
+sides, and leaves it unresolved: *"Leaving it as-is for now."*
+
+**Puts points back on — the entire list, after checking all five files:**
+```python
+def record_accepted(responder):
+    """They took the callout. Score goes up."""
+    _set(responder, recent_acceptance(responder) + ACCEPTANCE_CREDIT)
+```
+Exactly one function, fired only when a responder is offered a job *and*
+says yes. Adds `ACCEPTANCE_CREDIT` (0.08). Nothing else anywhere in
+`config.py`, `routing.py`, `offer.py`, or `availability.py` ever moves a
+score in the positive direction — no reset, no decay, no time-based easing.
+
+| | Trigger | Effect |
+|---|---|---|
+| Points off | Decline *or* timeout — no distinction | −0.12 |
+| Points back on | Accepting a job — the only way | +0.08 |
+
+That asymmetry, plus there being only one way back up and no way to get
+there without already being offered work, is the entire trap in two
+functions.
+
 ## How the code explains every data finding, step by step (16 Oct 2026)
 Walking `00-rook/code/dispatch-routing/` from "incident happens" to "phone
 buzzes," and tying each step directly to a finding above.
@@ -442,3 +479,39 @@ the config. Wen never replied. The code gives a confident answer on the
   whether there's a filing gap, not just a severity gap.
 - Whether Meteor Mite and Vesper represent two different ways into the same
   trap (geography vs. penalty-spiral) rather than one shared cause.
+
+## Recommended next steps (16 Oct 2026)
+My point of view, not just a list of open options.
+
+1. **Send the Ravi data request today — don't wait for the regroup.** It's
+   the one piece of evidence that turns the leading theory into a proven
+   one, and data pulls take time. Send now, walk into the regroup with an
+   answer in hand or in flight.
+2. **Push for the no-decay fix regardless of what Ravi's data says.** This
+   is the one confirmed finding (hypothesis #1) that doesn't need anything
+   else to be true first. Letting a bad mark fade over time is safe either
+   way — propose it as its own small, low-risk, shippable change, not
+   bundled with the harder weight-rebalancing question.
+3. **Do something for the four trapped responders this week, not after a
+   code fix ships.** Meteor Mite and Vesper are invisible to support
+   entirely, and nothing in the system helps them on its own. Ask Marcus
+   whether a handler override can manually get them back into rotation as a
+   stopgap, in parallel with the real fix.
+4. **At the regroup, don't relitigate 4.2 — isolate the bug from the
+   decision.** The proximity change was a legitimate, requested fix;
+   reverting it just trades one upset group for another. Frame it as "the
+   change was reasonable, the trap it exposed wasn't."
+5. **Resolve the `pings_sent` definition with Ravi in the same
+   conversation.** Lower stakes, but it's actively causing confusion for
+   Nadia's team right now and costs nothing extra to ask while already
+   talking to him.
+
+**What I'd deliberately not do yet:** propose changing the weight numbers
+back. That's the one open question (#4/#9) without proof yet — Vesper's case
+is suggestive, not confirmed. Recommending a weight change before the data
+comes back risks repeating the same mistake as the original change: well-
+intentioned, untested against who it actually affects.
+
+**In one sentence:** fix the bug that has no downside, protect the people
+already hurt while that happens, and hold the harder decision until the
+data already asked for comes back.
