@@ -339,6 +339,48 @@ an unlucky run of declines/timeouts — rather than one uniform cause.
   dramatic, easier-to-tell "vanished right in front of me" stories (⅓ of
   tickets) pulling attention toward the smaller problem.
 
+## How the code explains every data finding, step by step (16 Oct 2026)
+Walking `00-rook/code/dispatch-routing/` from "incident happens" to "phone
+buzzes," and tying each step directly to a finding above.
+
+1. **Ranking weighs proximity highest now (`routing.py`) → explains the
+   offer collapse.** If the 4 collapsed responders are consistently farther
+   from incidents, they now rank near the bottom almost every time — which
+   is why their `pings_sent` fell, not just `pings_taken`.
+2. **The decline/timeout penalty never decays (`history.py`) → explains why
+   they never bounced back.** The only way to repair standing is to accept a
+   job — but you can't accept a job you're never offered. Not "got worse and
+   worse," but "nothing was ever going to let them climb back out."
+3. **The 60-second clock (`config.py`, `offer.py`) → explains the "it
+   vanished" complaints**, a separate, more widespread pattern that doesn't
+   require being far away or having a bad record — just a short enough
+   window that a normal response gets missed sometimes. Matches why Ambrose,
+   Aunt Dot, Halloran, and several ticket-filers outside the collapsed group
+   all describe near-misses.
+4. **Nobody's removed from the list; the search stops at the first "yes"
+   (`routing.py`, `offer.py`) → explains the redistribution.** Total work
+   didn't disappear, it moved to whoever now ranks higher — spread across
+   many responders, matching the loss/gain math above. Explains the Kip
+   case directly: Meteor Mite and The Gale share a handler and a job pool,
+   so Meteor Mite's lost jobs didn't vanish, they went to whoever ranked
+   above him — The Gale among them.
+5. **Rate vs. volume are tracked completely separately in the code →
+   explains the contradictions.** Ironvale, Nightwell, and Stormwrack likely
+   still rank well overall (good proximity keeps offer volume climbing), but
+   still occasionally lose the 60-second race on a specific job — which
+   feels like "nothing's coming" in the moment even while their weekly total
+   keeps rising. Same mix-up as Cindermark/The Drift's "right problem, wrong
+   description" tickets.
+6. **Why Vesper and Meteor Mite collapsed the same way for different
+   reasons.** Meteor Mite already had the weakest acceptance record of all
+   16 — the no-decay penalty catching him fits cleanly. Vesper had one of
+   the *best* records, but the code doesn't care how good your history is if
+   you're ranked low on proximity for most jobs: one bad week (her taken
+   count dropped from 12 to 6 right at the release) and she'd rarely be
+   offered anything again, regardless of her track record. Same trap, two
+   different ways in — consistent with the "two entry paths" wrinkle the
+   five-agent debate left open.
+
 ## Open items this doesn't settle
 - **Top priority:** per-responder location/travel-time data, for the 4
   collapsed responders plus Ashgrove and Halfmoon (flagged by multiple agents
