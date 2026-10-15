@@ -95,9 +95,16 @@ Since the release, acceptance is reportedly down and callout tickets are about
 before I could answer".
 
 - The 60s timeout plausibly explains the ⅓. Nobody has explained the ⅔.
-- **Open question nobody answered:** on 14 Aug Marcus asked whether the routing
-  change was *meant* to apply to responders who have been declining, or whether that
-  "just fell out" of the config. Wen was on PTO and never replied.
+- **Marcus's 14 Aug question — now answered (16 Oct 2026):** he asked whether
+  the routing change was *meant* to apply to responders who'd already been
+  declining, or whether that "just fell out" of the config. Wen never
+  replied, but the code settles it: the ranking formula recalculates fresh
+  for every callout with no special-casing by history — it hits anyone with
+  a lower current acceptance score uniformly, whether that's from a long
+  decline history or just being new. Vesper (one of the 4 collapsed
+  responders, previously one of the *best* acceptance records) is direct
+  evidence it isn't decliner-specific. Reply sent to Marcus; full reasoning
+  in `notes/responder-priority-and-pov.md`.
 - **Priya's view** is that the drop is mostly seasonal ("August is always soft") and
   should recover in September, and she warns against relitigating or reverting
   4.2. This was **a hypothesis, not a finding** — and the one data file in the repo

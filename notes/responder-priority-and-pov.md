@@ -381,6 +381,54 @@ buzzes," and tying each step directly to a finding above.
    different ways in — consistent with the "two entry paths" wrinkle the
    five-agent debate left open.
 
+## Hypotheses to test, ranked by resolvability (16 Oct 2026)
+Restated in formal null/alternative form, ranked by how confidently each can
+be closed — not by how important it is. #1 and #2 are no longer open
+questions; they're already settled using only what's in this repo.
+
+| # | Null hypothesis (H₀) | Alternative hypothesis (H₁) | Prediction if H₁ is true | Status |
+|---|---|---|---|---|
+| 1 | A responder's acceptance score recovers over time on its own, regardless of whether they're offered work. | A responder's score only rises when they accept a job — it never recovers passively. | A low-scoring responder's score stays flat or keeps falling for as long as they're not offered anything, since no decay function exists in the code. | **Confirmed** — read directly in `history.py`; matches Vesper's 12→5→2→1 trajectory with zero bounce. |
+| 2 | Responders who file "gone quiet" tickets are, on average, actually receiving fewer offers. | Ticket volume doesn't reliably track actual offer volume. | At least some high-ticket-volume responders show rising, not falling, weekly offers in the same window they're complaining. | **Confirmed** — Ironvale (8→12), Nightwell (15→21) both rose while filing "gone quiet" tickets; Meteor Mite/Vesper filed zero between them. |
+| 3 | The acceptance drop is explained by normal seasonal variation. | The drop is caused by the 4.2 release, not the calendar. | The decline aligns precisely with the release date, not a gradual August ramp, and doesn't self-correct in Sept/Oct without a fix. | Strongly supported; not fully closed — needs Sept/Oct data. |
+| 4 | The 4 collapsed responders aren't geographically different from the 12 who didn't collapse. | They're, on average, farther from incident locations — at or beyond the 45-min proximity cutoff. | Travel-time data shows their average distance is measurably higher than the stable group's. | **Open — top priority ask.** |
+| 5 | Meteor Mite collapsed for the same geographic reason as the other three. | His collapse is explained by an already-weak acceptance history, not distance. | His location is comparable to The Gale's (same handler, same city); his pre-release score is measurably lower than the group average. | Partial evidence (Kip's "same city"); rides on #4's data. |
+| 6 | All four collapsed responders entered the trap through the same mechanism. | There are at least two distinct entry paths — one proximity-driven, one history-driven. | Splitting the four by pre-release score and proximity shows one case strong-history/poor-proximity (Vesper) and one the reverse (Meteor Mite). | Open — compound, needs #4 plus event-level data. |
+| 7 | The timeout and the proximity reweighting can't be separated as distinct causes with available data. | The two changes produce two different, distinguishable failure signatures. | Event-level data shows a broad near-miss population (timeout-driven) separate from a narrow volume-collapse population (weight-driven). | Open — needs raw event logs, the biggest data lift on this list. |
+| 8 | Everything since 12 Aug is fully explained by the three documented 4.2 changes. | An undocumented change is also contributing. | Marcus or Helen confirms a change not reflected in the CHANGELOG or the code reviewed. | Open — cheap to ask, low expected payoff. |
+| 9 | Collapsing is explained by a responder's prior decline history, independent of proximity — i.e., the system effectively singles out decliners. | Once proximity is accounted for, prior decline history has no special, separate effect — it's just one more number plugged into the same formula for everyone. | Among responders with similar proximity profiles, worse pre-release acceptance scores show no meaningfully different collapse pattern than better ones. | Open — piggybacks on #4's data, sliced one more way. Directly answers Marcus's 14 Aug question with evidence, not just a code read. |
+
+## Marcus's 14 Aug question, answered (16 Oct 2026, revised)
+Marcus asked in Slack whether the routing change was meant to apply to
+responders who'd already been declining, or whether that "just fell out" of
+the config. Wen never replied. The code gives a confident answer on the
+*design* question; the Vesper evidence is suggestive, not proof, on the
+*outcome* question — the reply below is calibrated to say which is which.
+
+**Reply sent:**
+> On the code itself, this one's clear: it applies to everyone, uniformly.
+> There's no code path that treats someone with a declining history any
+> differently from a brand-new responder. The ranking formula
+> (`routing.score()`) recalculates fresh for every callout using the
+> current weights and whatever acceptance score a responder currently has —
+> whether that score is low from a long run of declines or just because
+> they're new and sitting at the default neutral value. Same formula, same
+> weights, every time, no special-casing either way. So no — it didn't fall
+> out as an accident that only hits decliners, and it wasn't built to
+> target them specifically either. It's indiscriminate by design.
+>
+> Where I'd caveat: that's the design answer, not yet the outcome answer.
+> Vesper — one of the four responders whose offers collapsed — had one of
+> the *best* acceptance records of anyone before the release, which is a
+> real data point against "this is really just hitting decliners in
+> practice." But it's one data point. To actually confirm it, I want to
+> check whether collapse correlates with decline history at all once you
+> control for proximity — if two responders have similar travel times but
+> different histories, do they collapse the same way or not? That needs the
+> same location data I've already asked Ravi for, just sliced one more way.
+> I'll have a cleaner answer once that comes back — flagging now so you've
+> got the mechanism, with the confidence level attached.
+
 ## Open items this doesn't settle
 - **Top priority:** per-responder location/travel-time data, for the 4
   collapsed responders plus Ashgrove and Halfmoon (flagged by multiple agents

@@ -67,6 +67,33 @@ Ask whether these exist and whether he can pull them:
 
 ---
 
+## Ready-to-send data request (16 Oct 2026)
+This is the single highest-priority ask from the full investigation — ask
+for this even if there's no time for anything else in item 4.
+
+> Hi Ravi — ahead of the 4.2 regroup, I'd like to test one specific theory.
+> The 4.2 routing weights lean harder on proximity now (60% of the ranking
+> score), and anyone 45+ minutes from an incident scores zero on that part
+> — a hard cutoff, not a gradual one. Four responders have seen their
+> offer volume collapse to near-zero since the release and never recovered.
+>
+> Could you pull average travel-time (or distance/region bands — no need
+> for exact locations) to assigned incidents, for each of these 16
+> responders, from before the 12 Aug release? I'm especially looking at:
+> Farlight, Meteor Mite, The Undertow, and Vesper (the four who collapsed),
+> plus Corporal Ashgrove and Halfmoon (declining, possibly heading the same
+> way) — compared against the other 10 as a baseline.
+>
+> If the four collapsed responders are consistently farther out than the
+> rest, that confirms proximity as the mechanism. If they're not, it rules
+> it out and points us back toward the acceptance-history scoring instead.
+> Either answer moves this forward — happy to talk through format, bands
+> are completely fine if exact figures raise any concerns.
+
+**Why this one matters most:** every other open question in the
+investigation either depends on this answer or is secondary to it (see the
+ranked hypothesis table in `notes/responder-priority-and-pov.md`).
+
 ## Keep in mind
 - **Don't lead him.** Ask what the numbers are, not whether the timeout
   broke things.
