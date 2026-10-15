@@ -5,6 +5,40 @@ Aug 2026, weekly `pings_sent`/`pings_taken`) cross-referenced against the 25
 support tickets and the 4 console interviews. See `CLAUDE.md` for the
 underlying findings this builds on.
 
+## In plain words
+On August 12, Rook changed how it picks which responder gets asked to help
+first. Right after that, something broke.
+
+**The big number:** before the change, about 132 jobs got accepted every
+week. After, it's about 111 a week. That's real help not going out, every
+week, for three weeks straight.
+
+**The four people hit hardest:** Farlight, Meteor Mite, The Undertow, and
+Vesper basically stopped being asked to help at all. Each used to get 10–14
+jobs a week; by the end of August most were down to 0 or 1 — and it never
+got better. Every week it got a little worse, not better.
+
+**Why:** it looks like once someone gets skipped a few times, the system
+starts skipping them even more — like a bad grade that never gets erased, so
+it keeps dragging the average down. The code backs this up: the part meant
+to let a bad mark fade over time was never built.
+
+**The surprising part:** the people complaining the loudest in support
+tickets aren't the ones in the most trouble. Three people (Ironvale,
+Nightwell, Stormwrack) wrote in a lot saying "I'm not getting work" — but the
+numbers show they were actually getting *more* work than before. Meanwhile
+the two worst-off people, Meteor Mite and Vesper, never filed a single
+complaint. We only found out about them because their handlers mentioned it
+in an unrelated conversation.
+
+**So what:** if you only listen to who complains the loudest, you'd help the
+wrong people and miss the two who needed it most.
+
+**One line for the boss:** *"Since the August change, some of our most
+reliable responders got stuck in a trap where the system stopped asking them
+for help — and the people hurt the worst aren't even the ones telling us
+about it."*
+
 ## Method note: the pre/post split
 4.2 shipped mid-week (Tue 12 Aug), inside the CSV's `2026-08-10` week. To
 avoid blending a few days of old behavior with a few days of new behavior

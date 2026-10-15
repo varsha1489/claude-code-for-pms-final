@@ -196,6 +196,9 @@ have missed Dispatch's two worst cases.
 - Use the newcomer advantage in month one to examine calls nobody has looked at closely.
 
 ### How to help me
+- **Explain things in plain, simple language by default** — short sentences,
+  everyday words, no jargon. Give me the detailed/technical version only
+  when I ask for it, or when I'm clearly in document/spreadsheet mode myself.
 - Keep facts (from the docs), hypotheses (someone's read) and my own conclusions
   clearly separated. Name the source when it matters.
 - For any metric claim, ask which data it comes from (Ravi's weekly, Marcus's
