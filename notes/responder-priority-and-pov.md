@@ -212,10 +212,143 @@ about trajectory (reading flat ticket volume as "still bad" while the pooled
 rate says "recovering," when the raw accepted-callout count is still down
 16% three weeks out — see the POV above).
 
+## Two responders, side by side (16 Oct 2026)
+One confirmed collapse, one of the nine "unconfirmed" responders (reported
+quiet in tickets, but not one of the 4 who actually collapse in the CSV) —
+same week-by-week format, to show what each pattern actually looks like in
+the raw rows.
+
+### Vesper (handler: Aunt Dot) — confirmed, and invisible to tickets
+| Week | Pinged | Took |
+|---|---|---|
+| 29 Jun | 14 | 11 |
+| 06 Jul | 13 | 10 |
+| 13 Jul | 15 | 13 |
+| 20 Jul | 14 | 11 |
+| 27 Jul | 13 | 11 |
+| 03 Aug | 14 | 12 |
+| 10 Aug (release) | 12 | 6 |
+| 17 Aug | 5 | 1 |
+| 24 Aug | 2 | 0 |
+| 31 Aug | 1 | 0 |
+
+Six steady weeks, then a dip the release week (12 pinged, only 6 taken), then
+a cliff: 5 → 2 → 1 pinged over the next three weeks, never recovering. She
+never filed a ticket — the only reason we know her story is Aunt Dot's
+interview.
+
+### Nightwell (handler: Marjorie Sung) — unconfirmed, filed 3 tickets
+| Week | Pinged | Took |
+|---|---|---|
+| 29 Jun | 15 | 11 |
+| 06 Jul | 14 | 10 |
+| 13 Jul | 15 | 12 |
+| 20 Jul | 16 | 12 |
+| 27 Jul | 15 | 11 |
+| 03 Aug | 15 | 12 |
+| 10 Aug (release) | 16 | 9 |
+| 17 Aug | 18 | 14 |
+| 24 Aug | 20 | 13 |
+| 31 Aug | 21 | 15 |
+
+Six steady weeks, a real dip the release week (16 pinged, only 9 taken) —
+then pinged *more* than ever: 18 → 20 → 21, still taking most of them. She
+filed three tickets in that same window saying she'd gone quiet ("nothing in
+10 days," filed 22 Aug) while the data shows the opposite. Either she
+genuinely wasn't noticing the pings — pointing at an alerts problem, not a
+routing one — or `pings_sent` isn't counting what her ticket describes.
+Either way, trusting her ticket alone would send the investigation in the
+wrong direction.
+
+**The contrast is the point:** both responders show the same real dip in the
+release week. One keeps falling and is silent in support. The other recovers
+in the data and is loud in support. Frequency of complaint and severity of
+the actual problem are not the same thing.
+
+## Five-agent root-cause investigation (16 Oct 2026)
+Five independent investigations, one per lens, each working only from this
+repo's files, then shown each other's findings and asked to debate and try
+to converge.
+
+**In plain words:** the August 12 change made the app care more about *how
+close* a responder is and less about *how often they say yes*. At the same
+time, there's a bug: once someone misses or turns down a job, that mark
+against them never goes away on its own. Put those together, and a responder
+who starts out slightly disadvantaged — most likely because they're farther
+away — gets offered less, which drags their score down further, which gets
+them offered even less. A trap with no way out built in. The shorter
+60-second window is a second, separate problem: it makes *everyone*
+occasionally lose a job they'd have caught before, but it isn't what's
+trapping the four hardest-hit responders.
+
+### Round 1 — five lenses, five independent hypotheses
+| Lens | One-line hypothesis | Confidence |
+|---|---|---|
+| Code & mechanism | Proximity weight up (0.45→0.60) + acceptance weight down (0.40→0.25) + a hard 45-min proximity floor (score = 0.0 past it) + a non-decaying decline/timeout penalty (−0.12 vs. +0.08 for accepting) creates a self-reinforcing trap; `offer.dispatch()` stops at the first acceptance, so ranked-low means rarely-reached. | Medium |
+| Tickets vs. data | Two separate problems are tangled in the tickets — a broad timeout effect, and a narrow routing-driven collapse — but tickets are a poor proxy for *who*: most "gone quiet" tickets name responders whose volume was flat or rising; the two worst actual cases (Meteor Mite, Vesper) filed none. | Medium-high on unreliability, medium on why |
+| Interviews / qualitative | Three of four handlers raised a version of "offers vanish/feast-or-famine" unprompted, in interviews that weren't about 4.2; Marcus independently flagged the same undifferentiated decline/timeout penalty in Slack, 3 days after launch. | Medium |
+| Redistribution & volume patterns | 4.2 redistributed offers along an axis not in the CSV (most likely geography) — losses (40.67/wk) and gains (35.33/wk) are close in size but spread across many responders, not 1-2 pairs. One handler (Kip) has both a collapsed responder (Meteor Mite) and the single biggest gainer (The Gale) — rules out handler-level cause for that pair. | Medium |
+| Timing & seasonality | Onset lands exactly in the release week; the first full post-release week shows the cliff; it keeps worsening for 3 straight weeks with zero reversion — the signature of a step-function change, not a seasonal dip. Flagged a correction: total weekly offers actually fell ~6-7% post-release, not flat as previously written here. | Medium-high that it isn't seasonal |
+
+### Debate round — where they converged
+All five, independently, arrived at close variants of the same statement
+after reading each other's work — including the timing specialist, whose
+whole job was to find evidence *for* seasonality:
+
+> 4.2's routing rebalance (proximity weighted up, recent-acceptance history
+> weighted down) combined with a decline/timeout penalty that never decays
+> created a self-reinforcing trap: a responder who starts slightly
+> disadvantaged gets offered less, which lowers their score further, which
+> gets them offered even less — with no built-in way to recover. The shorter
+> 60-second timeout is a separate, broader problem that makes everyone
+> occasionally lose a job they'd have caught before, but it isn't what
+> trapped these four specifically. The seasonal explanation doesn't hold up
+> against any of the five lenses.
+
+**What moved people:** Agent 4's finding that pre-release acceptance rate
+does *not* predict who collapsed (Meteor Mite was the lowest of all 16 at
+0.687; Vesper was 3rd-highest at 0.819) pushed Agents 1 and 3 to rank
+proximity/geography as the dominant lever rather than the acceptance-penalty
+spiral alone. That same finding made Agent 5 (timing) drop their own
+seasonality hedge — if a real seasonal dip were driving this, the
+highest-acceptance responders shouldn't be among the casualties.
+
+### What's still open — the one thing every agent asked for
+All five, independently, named the same gap: **no responder location or
+travel-time data exists anywhere in this repo.** The mechanism is
+well-supported; *who* falls into it (and why Vesper, with a strong
+pre-release record, collapsed as hard as Meteor Mite, who didn't) can't be
+confirmed without it. This is now the single highest-leverage ask for Ravi,
+above even the pings_sent definitional question.
+
+**A wrinkle, not yet resolved:** Meteor Mite's profile (already the weakest
+acceptance rate of all 16) fits a straightforward "already a bit shaky, then
+crushed" story. Vesper's (3rd-highest acceptance rate) doesn't. There may be
+**two different entry paths into the same trap** — one via geography, one via
+an unlucky run of declines/timeouts — rather than one uniform cause.
+
+### Where the agents pushed back on each other
+- The interviews agent treated three handlers independently describing
+  "feast or famine" as strong corroboration. Two other agents pushed back:
+  several tickets making the identical claim (Ironvale, Nightwell,
+  Stormwrack — "nothing in weeks") are flatly false against the CSV, raising
+  the question of whether people were repeating a story they'd heard rather
+  than reporting what actually happened to them.
+- The timing agent argued the *silent, no-offer* problem (⅔ of tickets) is
+  the one best explained by the data, and cautioned against the more
+  dramatic, easier-to-tell "vanished right in front of me" stories (⅓ of
+  tickets) pulling attention toward the smaller problem.
+
 ## Open items this doesn't settle
+- **Top priority:** per-responder location/travel-time data, for the 4
+  collapsed responders plus Ashgrove and Halfmoon (flagged by multiple agents
+  as possibly heading the same direction) — the one data point every
+  investigation independently asked for.
 - Whether `pings_sent` in the CSV is the official export, or counts
   something different from what tickets describe (see
   `notes/ravi-1-1-agenda.md`) — the Ironvale/Nightwell/Stormwrack
   contradiction can't be resolved without this.
 - Why Meteor Mite and Vesper generated no tickets at all — worth asking Nadia
   whether there's a filing gap, not just a severity gap.
+- Whether Meteor Mite and Vesper represent two different ways into the same
+  trap (geography vs. penalty-spiral) rather than one shared cause.
