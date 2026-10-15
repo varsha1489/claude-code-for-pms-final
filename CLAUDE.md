@@ -122,7 +122,10 @@ that's the first thing to ask him (see `notes/ravi-1-1-agenda.md`).
   her getting 16–21 offers/week throughout. Worth resolving before trusting
   either source alone.
 - **Acceptance didn't drift seasonally — it stepped down exactly at the 12 Aug
-  release**, while total offers sent stayed flat. That cuts against "it's just August."
+  release.** Correction: total offers sent actually fell too (~6-7%, not flat
+  as earlier noted here), but nearly all of that drop traces to the 4
+  collapsed responders — a redistribution signature, not fewer incidents
+  happening. Still cuts against "it's just August."
 - **In the routing code** (`00-rook/code/dispatch-routing/`), a decline and a
   timeout are scored identically, and the penalty (0.12, vs. a 0.08 credit for
   accepting) never decays — a 2019 TODO from Wen flags this exact question and
@@ -180,6 +183,27 @@ have missed Dispatch's two worst cases.
   was actually Aunt Dot's account of Vesper), and Captain Vantage
   reclassified as the key informant behind the routing-fairness theory
   rather than a casework priority, since his own data shows no issue.
+
+### Root-cause investigation: five lenses converged (16 Oct 2026)
+Five independent analyses (code mechanism, tickets vs. data, interviews,
+redistribution patterns, timing) each formed their own hypothesis from this
+repo alone, then debated each other. All five converged: the 4.2 routing
+rebalance plus a decline/timeout penalty that never decays created a
+self-reinforcing trap — a responder ranked low gets offered less, which
+lowers their score further, which gets them offered even less, with nothing
+in the code to reverse it on its own. Seasonality was ruled out by every
+lens, including the one looking for evidence of it. Full debate and the
+open "two entry paths" wrinkle (Vesper vs. Meteor Mite) are in
+`notes/responder-priority-and-pov.md`.
+- **No built-in recovery exists.** Checked directly against the code: the
+  only way a frozen-out responder's score improves is accepting an offer —
+  but they can't get offered one while ranked low, and nothing decays over
+  time. Only a lucky nearby incident, a code fix, or possibly a handler
+  override (unconfirmed whether that even feeds the scoring) could break
+  the loop.
+- **Top open ask, named independently by every agent:** per-responder
+  location/travel-time data — nobody can confirm *why* these specific four
+  collapsed without it.
 
 ### Roadmap loose ends (Q3 roadmap, rev. 30 Jun)
 - **Availability Confidence**, a confidence score shown next to stated availability
