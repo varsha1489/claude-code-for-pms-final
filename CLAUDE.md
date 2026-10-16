@@ -212,6 +212,37 @@ open "two entry paths" wrinkle (Vesper vs. Meteor Mite) are in
   location/travel-time data — nobody can confirm *why* these specific four
   collapsed without it.
 
+### 4.2 is config-only — and the bug predates it (16 Oct 2026)
+Confirmed from the code's own comments and the changelog (not an independent
+git diff — this repo has no version history to verify against, so treat as
+documented, not audited): 4.2 changed exactly three numbers in
+`config.py` — the timeout (90→60s) and two weights (proximity 0.45→0.60,
+acceptance 0.40→0.25). No logic changed in `routing.py`, `offer.py`, or
+`history.py`. **The no-decay penalty bug itself is not new** — Wen's
+comment flagging it is dated 2019, years before 4.2. 4.2 didn't create the
+trap; it changed the dial settings that exposed it. Scoring is simple and
+asymmetric: exactly one function anywhere in the code adds points
+(`record_accepted`, +0.08, only on an accepted job); `record_declined`
+(a decline *or* a timeout, treated identically) subtracts 0.12, and nothing
+else ever moves a score up.
+- **Spec vs. shipped, checked against the Q3 roadmap:** 2 of 3 committed
+  4.2 items matched what shipped (routing rebalance, timeout tuning).
+  Console filter persistence shipped **without ever being a roadmap
+  commitment** — scope that appeared without being planned, the mirror
+  image of Availability Confidence being planned and dropped (below).
+  No numeric targets exist in any doc, so even the two "matching" items
+  can only be checked against the code, not against a written spec.
+
+### Recommended next steps (16 Oct 2026)
+Full reasoning in `notes/responder-priority-and-pov.md`. Short version:
+send the Ravi location/travel-time request now (don't wait for the
+regroup); push the no-decay fix regardless of what that data shows, since
+it's safe either way; do something this week for the 4 trapped responders
+(handler override as a stopgap) rather than waiting on a code fix; at the
+regroup, isolate the bug from the "should we revert 4.2" question — don't
+relitigate the weight change itself; hold off on recommending the weight
+numbers change back until the proximity data confirms or kills that theory.
+
 ### Roadmap loose ends (Q3 roadmap, rev. 30 Jun)
 - **Availability Confidence**, a confidence score shown next to stated availability
   and driven by support escalations, was *committed* for 4.2 but **does not appear in
