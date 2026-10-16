@@ -105,37 +105,57 @@ We've asked Ravi for travel-time data to confirm this before we recommend
 touching the weights themselves. Second Chance doesn't need that answer —
 it works regardless of *why* someone went quiet.
 
-## Build order — we don't have to wait on engineering to start helping people
+## Build order — all three are already built and clickable
 
 Second Chance and the timeout-penalty fix are the core ask below, and they
-take real engineering time. In parallel, three things can start immediately,
-each one not dependent on the others or on Ravi's data landing first:
+take real engineering time. We didn't wait: three things that don't depend
+on each other, on Ravi's data, or on anyone approving the main build are
+already prototyped, working off real data from this repo, not mockups.
 
-**#1 — starting now.** A guaranteed-offer override a handler can trigger by
+**#1 — live now.** A guaranteed-offer override a handler can trigger by
 hand today, for Farlight, Meteor Mite, The Undertow, and Vesper specifically
 — the same idea as Second Chance, done manually, with the same travel-range
-safety check, live before any code ships. Clickable prototype:
-**Guaranteed Offer Override**. This is the one that actually reaches the
-four people who need it, this week, not after a build cycle.
+safety check, live before any code ships.
+**[Give Them a Job Right Now](https://claude.ai/artifact/SMnvvpYouxd5CxapAFHAyB)**
+(`05-super-speed/guaranteed-offer-override.html`) — this is the one that
+actually reaches the four people who need it, this week, not after a build
+cycle.
 
-**#2 — fast follow.** A reconciliation check between tickets and the real
-weekly data, so Nadia's team stops chasing false "gone quiet" tickets
-(Ironvale, Nightwell, Stormwrack all showed *rising* offers while filing
-them) and stops missing real ones the way it missed Meteor Mite and Vesper.
+**#2 — built, and it already caught something new.** A reconciliation tool
+for Nadia's team: pick any responder, see their actual ticket claim next to
+their real weekly data, get a verdict. Confirmed what we suspected —
+Ironvale, Nightwell, and Stormwrack all filed "gone quiet" tickets while
+their real offers were *rising* — and gave Meteor Mite and Vesper their own
+"silent but real" category: the two who collapsed worst and never filed
+anything.
+**[Ticket Data Reconciliation](https://claude.ai/artifact/3mSDrSsmKuN9P3Z9SUGuoQ)**
+(`05-super-speed/ticket-data-reconciliation.html`).
 
-**#3 — fast follow.** An explainer on the handler's console showing why a
-responder ranked where they did for a given callout. This is a durable,
-every-time answer to the question Marcus asked on 14 Aug, not a one-off
-reply in Slack.
+**#3 — built, and it independently confirmed the core finding.** A
+handler-facing explainer showing the real score breakdown behind any
+responder's ranking — a durable, every-time answer to the question Marcus
+asked on 14 Aug, not a one-off Slack reply. Computing the real formula
+against real data landed on the same number our original investigation
+found by a different path: all four collapsed responders score 0.0–0.12 on
+real acceptance history by the end of August, while every other responder
+sits at or near 1.0.
+**[Why Wasn't I Offered](https://claude.ai/artifact/SZZss6J6QMy6ZdRwGQ26iB)**
+(`05-super-speed/why-wasnt-i-offered.html`).
+
+**Why this matters beyond "we built some demos":** #2 and #3 aren't just
+illustrations of the proposal — they're independent, data-driven checks
+that landed on the same conclusions the original investigation did,
+computed a second time, a different way. That's a stronger thing to put in
+front of Helen than three mockups would have been.
 
 ## The ask
 
 Approve Second Chance (plus the early-warning tier) as the thing to
 actually build — on its own, not bundled with a decision about reverting or
 reweighting 4.2. The no-decay patch should still ship, separately, since
-it's safe either way. We're starting on #1 above immediately and will fast
-follow with #2 and #3 while the main build is underway. Wen's back from PTO
-and is the natural owner on the engineering side, since her own 2019
-comment on the routing code is where this whole question started. Full
-findings and the evidence behind all of this are in
+it's safe either way. #1, #2, and #3 above are already live and don't need
+approval to keep using — they're ready to show in the room today. Wen's
+back from PTO and is the natural owner on the engineering side, since her
+own 2019 comment on the routing code is where this whole question started.
+Full findings and the evidence behind all of this are in
 `notes/responder-priority-and-pov.md`.

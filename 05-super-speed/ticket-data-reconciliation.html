@@ -1,0 +1,482 @@
+<title>Ticket Data Reconciliation</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: a responder roster on the left, a claim-vs-data case file on the right. On phone, roster collapses to a top picker and the case file fills the screen. */
+:root{
+  --bg:#eef1ee; --panel:#ffffff; --panel-2:#f3f5f2;
+  --fg:#15201c; --fg-muted:#5c6a64; --border:#d6ddd8;
+  --accent:#0d7d6e; --accent-fg:#ffffff;
+  --warn:#9a6700; --warn-bg:#fbeedb;
+  --good:#156b3a; --good-bg:#e2f3e8;
+  --below:#b3261e; --below-bg:#fbeae8;
+  --font-sans:'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono:'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101512; --panel:#171e1a; --panel-2:#1c2420;
+    --fg:#eaf0ec; --fg-muted:#9aa8a2; --border:#2a332e;
+    --accent:#3fd9bf; --accent-fg:#06201b;
+    --warn:#ffc55c; --warn-bg:#2c2410;
+    --good:#6fd99a; --good-bg:#0f2a1b;
+    --below:#ff8177; --below-bg:#2c1613;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101512; --panel:#171e1a; --panel-2:#1c2420;
+  --fg:#eaf0ec; --fg-muted:#9aa8a2; --border:#2a332e;
+  --accent:#3fd9bf; --accent-fg:#06201b;
+  --warn:#ffc55c; --warn-bg:#2c2410;
+  --good:#6fd99a; --good-bg:#0f2a1b;
+  --below:#ff8177; --below-bg:#2c1613;
+  color-scheme:dark;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font-family:var(--font-sans);
+  padding-left:max(16px, env(safe-area-inset-left,0px));
+  padding-right:max(16px, env(safe-area-inset-right,0px));
+}
+.wrap{max-width:1080px; margin:0 auto; padding-block:28px 48px;}
+header.top{margin-bottom:20px;}
+.eyebrow{
+  font-family:var(--font-mono); font-size:11px; letter-spacing:.08em;
+  text-transform:uppercase; color:var(--accent); font-weight:600;
+}
+h1{font-size:26px; margin:6px 0 8px; letter-spacing:-0.01em; text-wrap:balance;}
+.sub{color:var(--fg-muted); font-size:14.5px; max-width:640px; line-height:1.5; margin:0;}
+
+.legend{
+  display:flex; flex-wrap:wrap; gap:8px; margin-top:16px;
+}
+.legend-pill{
+  display:inline-flex; align-items:center; gap:6px;
+  font-family:var(--font-mono); font-size:10.5px; letter-spacing:.03em;
+  padding:4px 9px; border-radius:100px; border:1px solid var(--border);
+  background:var(--panel-2); color:var(--fg-muted);
+}
+.legend-pill .dot{width:7px; height:7px; border-radius:50%; flex:none;}
+
+.layout{
+  display:grid; grid-template-columns:280px 1fr; gap:16px; margin-top:20px;
+  align-items:start;
+}
+@media (max-width:760px){ .layout{grid-template-columns:1fr;} }
+
+.roster{
+  background:var(--panel); border:1px solid var(--border); border-radius:14px;
+  padding:10px; display:flex; flex-direction:column; gap:4px;
+  max-height:none;
+}
+@media (min-width:761px){
+  .roster{ position:sticky; top:16px; max-height:calc(100vh - 32px); overflow-y:auto; }
+}
+.roster-head{
+  font-family:var(--font-mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--fg-muted); padding:6px 10px 8px;
+}
+.roster-item{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  width:100%; text-align:left; background:none; border:1px solid transparent;
+  border-radius:9px; padding:9px 10px; cursor:pointer; font-family:var(--font-sans);
+  font-size:13.5px; color:var(--fg);
+}
+.roster-item:hover{background:var(--panel-2);}
+.roster-item.active{background:var(--panel-2); border-color:var(--border);}
+.roster-item .name{font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.roster-item .chip{
+  flex:none; width:8px; height:8px; border-radius:50%;
+}
+
+.case{
+  background:var(--panel); border:1px solid var(--border); border-radius:16px;
+  padding:22px; min-width:0;
+}
+.case-head{
+  display:flex; align-items:flex-start; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  border-bottom:1px solid var(--border); padding-bottom:16px; margin-bottom:18px;
+}
+.case-name{font-size:21px; font-weight:700; margin:0;}
+.case-handler{font-size:13px; color:var(--fg-muted); margin:3px 0 0; font-family:var(--font-mono);}
+.verdict{
+  font-family:var(--font-mono); font-size:11.5px; font-weight:600; letter-spacing:.04em;
+  text-transform:uppercase; padding:7px 13px; border-radius:100px; white-space:nowrap;
+}
+.verdict.confirmed{background:var(--good-bg); color:var(--good);}
+.verdict.contradicted{background:var(--below-bg); color:var(--below);}
+.verdict.partial{background:var(--warn-bg); color:var(--warn);}
+.verdict.silent{background:var(--panel-2); color:var(--fg); border:1.5px dashed var(--below);}
+
+.section-label{
+  font-family:var(--font-mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase;
+  color:var(--fg-muted); margin:0 0 8px;
+}
+.plain{font-size:14px; color:var(--fg); line-height:1.6; margin:0 0 20px;}
+
+.ticket-block{
+  background:var(--panel-2); border:1px solid var(--border); border-radius:12px;
+  padding:14px 16px; margin-bottom:20px;
+}
+.ticket-block.none{border-style:dashed; color:var(--fg-muted);}
+.ticket-meta{
+  font-family:var(--font-mono); font-size:11px; color:var(--fg-muted);
+  display:flex; gap:10px; flex-wrap:wrap; margin-bottom:8px;
+}
+blockquote{
+  margin:0; font-size:14.5px; line-height:1.55; font-style:italic; color:var(--fg);
+  border-left:3px solid var(--accent); padding-left:12px;
+}
+.ticket-block.none blockquote{border-left-color:var(--border); font-style:normal;}
+
+.chart-wrap{
+  background:var(--panel-2); border:1px solid var(--border); border-radius:12px;
+  padding:16px; margin-bottom:20px; overflow-x:auto;
+}
+.chart-key{display:flex; gap:16px; font-family:var(--font-mono); font-size:10.5px; color:var(--fg-muted); margin-bottom:10px; flex-wrap:wrap;}
+.chart-key span{display:inline-flex; align-items:center; gap:5px;}
+.chart-key .sw{width:10px; height:10px; border-radius:2px;}
+svg.chart{display:block; width:100%; min-width:520px; height:150px;}
+.numrow{
+  display:flex; gap:0; font-family:var(--font-mono); font-size:10.5px; color:var(--fg-muted);
+  margin-top:6px; min-width:520px;
+}
+.numrow div{flex:1; text-align:center;}
+
+.verdict-note{
+  font-size:13.5px; line-height:1.6; padding:14px 16px; border-radius:12px;
+  background:var(--panel-2); border:1px solid var(--border);
+}
+.verdict-note b{color:var(--fg);}
+
+footer.note{
+  margin-top:26px; font-size:12px; color:var(--fg-muted); line-height:1.6;
+  border-top:1px solid var(--border); padding-top:14px;
+}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Rook Dispatch &middot; Support Tool</div>
+    <h1>Ticket Data Reconciliation</h1>
+    <p class="sub">Pick a responder. See what their ticket says, see their real weekly offer numbers, and get a straight answer on whether the ticket matches the data. Built after 4.2 made that gap hard to eyeball by hand.</p>
+    <div class="legend">
+      <span class="legend-pill"><span class="dot" style="background:var(--good)"></span>Confirmed &mdash; ticket matches the data</span>
+      <span class="legend-pill"><span class="dot" style="background:var(--below)"></span>Contradicted &mdash; data says otherwise</span>
+      <span class="legend-pill"><span class="dot" style="background:var(--warn)"></span>Partial &mdash; real issue, wrong description</span>
+      <span class="legend-pill"><span class="dot" style="border:1.5px dashed var(--below); background:transparent"></span>Silent but real &mdash; no ticket, real trouble</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="roster" id="roster">
+      <div class="roster-head">16 responders</div>
+    </nav>
+    <main class="case" id="case"></main>
+  </div>
+
+  <footer class="note">
+    Weeks run Monday-start, 29 Jun&ndash;31 Aug 2026, from <code>callout-history.csv</code>. The dashed line on each chart marks the 12 Aug release of 4.2 (routing rebalance + 60s timeout). "Offers" = pings sent to that responder; "Taken" = pings they accepted. Source tickets: <code>00-rook/feedback/tickets/</code>.
+  </footer>
+</div>
+
+<script>
+(function(){
+  // weeks: 2026-06-29 ... 2026-08-31, 10 weeks, short labels
+  var weeks = ["6/29","7/6","7/13","7/20","7/27","8/3","8/10","8/17","8/24","8/31"];
+  var RELEASE_IDX = 6.5; // boundary between week index 6 (8/3) and 7 (8/10)
+
+  // responder -> {handler, sent:[], taken:[], tickets:[{id,date,filer,quote}], verdict, verdictLabel, note}
+  var D = {
+    "Captain Vantage": {
+      handler:"Mr. Ambrose",
+      sent:[12,13,12,11,12,12,13,15,17,18],
+      taken:[10,10,8,7,9,9,8,11,13,13],
+      tickets:[{id:"T-001", date:"13 Aug 2026", filer:"Ambrose (handler)",
+        quote:"Yesterday evening a callout came in and Captain Vantage was in the process of suiting up — coat and one boot on — when the offer moved along to someone else before he could get to his phone... I'd ask that whoever reviews this at least confirm the timing is what it's meant to be."}],
+      verdict:"partial",
+      verdictLabel:"Partial — right problem, wrong description",
+      note:"The one lost callout is real — it's the universal 60-second timeout, now live for everyone, not something broken on his account. But his own weekly numbers are rising the whole time, before and after the release. He's not a struggling case; one fast offer isn't evidence of a personal decline."
+    },
+    "Cindermark": {
+      handler:"Farid Haddad",
+      sent:[9,9,8,10,9,9,10,11,12,12],
+      taken:[7,8,6,7,7,8,6,8,8,9],
+      tickets:[
+        {id:"T-015", date:"27 Aug 2026", filer:"Cindermark (responder, mobile)",
+          quote:"almost had it. literally had my thumb on the screen and it switched to someone else. not happy"},
+        {id:"T-020", date:"1 Sep 2026", filer:"Farid Haddad (handler)",
+          quote:"Cindermark has been quiet for about ten days now with only one callout in that window, and that one he lost before he could respond — he mentioned it to me separately, said it was gone almost instantly."}
+      ],
+      verdict:"partial",
+      verdictLabel:"Partial — right problem, wrong description",
+      note:"The missed-offer part is real (the 60s timeout, happening to lots of people now). The \"quiet for ten days\" part doesn't hold up — his weekly offers are steady-to-rising across the whole window, never dropping the way the ticket implies."
+    },
+    "Corporal Ashgrove": {
+      handler:"Yusuf Demir",
+      sent:[10,11,10,9,10,10,10,8,7,7],
+      taken:[8,9,7,7,8,8,6,5,5,5],
+      tickets:[
+        {id:"T-002", date:"14 Aug 2026", filer:"Yusuf Demir (handler)",
+          quote:"Corporal Ashgrove's phone hasn't gone off in six days, which is unusual for him — he's normally one of our busier responders... everything looks set to available, capability tags all present, nothing obviously wrong on our end."},
+        {id:"T-006", date:"20 Aug 2026", filer:"Corporal Ashgrove (responder, mobile)",
+          quote:"nothing all week?? is this thing broken"}
+      ],
+      verdict:"confirmed",
+      verdictLabel:"Confirmed",
+      note:"Matches the data. His weekly offers taken drop from 7–9 before the release to 5 afterward, and stay there — a real, moderate decline, not a glitch."
+    },
+    "Farlight": {
+      handler:"Linda Pruitt",
+      sent:[12,12,11,12,13,12,10,3,1,0],
+      taken:[9,9,8,9,10,8,4,0,0,0],
+      tickets:[{id:"T-018", date:"30 Aug 2026", filer:"Linda Pruitt (handler)",
+        quote:"Farlight has gone almost two weeks now without a single callout, which given her crowd-management tag surprises me... Raising this because she's started asking me directly, which she doesn't usually do."}],
+      verdict:"confirmed",
+      verdictLabel:"Confirmed",
+      note:"Matches the data exactly. Offers collapse from 10–13 a week to 3, then 1, then 0 right after the release — one of the two worst cases in the whole roster."
+    },
+    "Halfmoon": {
+      handler:"Simone Fischer",
+      sent:[11,10,11,12,11,11,11,9,8,8],
+      taken:[8,7,8,8,9,8,6,5,5,7],
+      tickets:[
+        {id:"T-010", date:"23 Aug 2026", filer:"Simone Fischer (handler)",
+          quote:"Halfmoon mentioned last night that she can't remember the last time she was actually offered something... it does look thin, more than a week with nothing."},
+        {id:"T-021", date:"2 Sep 2026", filer:"Halfmoon (responder, mobile)",
+          quote:"week 2 of nothing now. starting to think somethings actually wrong"}
+      ],
+      verdict:"partial",
+      verdictLabel:"Partial — right problem, wrong description",
+      note:"There is a real dip — offers taken fall from 8–9 a week to 5–6 — but \"nothing\" overstates it. She kept getting offers most weeks; she just accepted fewer of them."
+    },
+    "Ironvale": {
+      handler:"Teresa Alvarez",
+      sent:[8,8,9,8,7,8,9,10,11,12],
+      taken:[6,5,8,6,5,7,5,6,8,9],
+      tickets:[
+        {id:"T-008", date:"21 Aug 2026", filer:"Teresa Alvarez (handler)",
+          quote:"Ironvale's had no callouts since the 12th, which as far as I can remember has never happened for a full nine days straight."},
+        {id:"T-017", date:"29 Aug 2026", filer:"Ironvale (responder, mobile)",
+          quote:"still nothing. anyone else's app just dead lately or is it me"},
+        {id:"T-025", date:"5 Sep 2026", filer:"Teresa Alvarez (handler)",
+          quote:"Ironvale finally got offered something yesterday, first one in almost a month, and it moved on to someone else before she could get to it."}
+      ],
+      verdict:"contradicted",
+      verdictLabel:"Contradicted",
+      note:"The data says the opposite of \"dead.\" Her weekly offers are actually trending up across this whole window (8 a week in June to 12 by late August), and offers taken recover too. Whatever she's experiencing, it isn't a drop in offers sent."
+    },
+    "Meteor Mite": {
+      handler:"Kip",
+      sent:[11,12,10,11,12,11,10,4,2,1],
+      taken:[7,9,6,7,9,8,4,1,0,0],
+      tickets:[],
+      verdict:"silent",
+      verdictLabel:"Silent but real",
+      note:"No ticket filed — by handler or responder. But the data shows one of the worst collapses in the roster: offers fall from 10–12 a week to 4, then 2, then 1. Only known from an interview, not a single support ticket. Ticket volume alone would have missed this entirely."
+    },
+    "Nightwell": {
+      handler:"Marjorie Sung",
+      sent:[15,14,15,16,15,15,16,18,20,21],
+      taken:[11,10,12,12,11,12,9,14,13,15],
+      tickets:[
+        {id:"T-004", date:"18 Aug 2026", filer:"Marjorie Sung (handler)",
+          quote:"Second week running with almost nothing for Nightwell. She's asked me twice now if her account is actually active."},
+        {id:"T-009", date:"22 Aug 2026", filer:"Nightwell (responder, mobile)",
+          quote:"is my account broken. nothing in like 10 days"},
+        {id:"T-011", date:"24 Aug 2026", filer:"Marjorie Sung (handler)",
+          quote:"something did come in for Nightwell, first thing in ten days, and she missed it — she says by the time she'd picked up the phone it had already moved on to someone else."}
+      ],
+      verdict:"contradicted",
+      verdictLabel:"Contradicted",
+      note:"The CSV shows the opposite story: she's getting 16–21 offers a week through this entire stretch, more than before the release, not fewer. Whatever \"nothing in 10 days\" refers to, it isn't offer volume in this data."
+    },
+    "Sgt. Falkirk": {
+      handler:"Owen Bramwell",
+      sent:[10,10,11,10,9,10,11,13,15,16],
+      taken:[9,8,8,8,7,8,7,9,11,11],
+      tickets:[
+        {id:"T-003", date:"17 Aug 2026", filer:"Sgt. Falkirk (responder, mobile)",
+          quote:"gone before i even opened the app. this happen to anyone else"},
+        {id:"T-016", date:"28 Aug 2026", filer:"Owen Bramwell (handler)",
+          quote:"Sgt. Falkirk had a slow first half of August, picked up briefly, and has gone quiet again this past week... I wanted it logged since he's asked me about it twice now."}
+      ],
+      verdict:"partial",
+      verdictLabel:"Partial — right problem, wrong description",
+      note:"The missed-offer complaint fits the shorter timeout, a real and universal change. But \"gone quiet\" doesn't match his numbers — offers are rising across the window, not falling, from 10 a week in June to 16 by late August."
+    },
+    "Stormwrack": {
+      handler:"Renata Kovač",
+      sent:[13,13,12,14,13,13,14,16,18,19],
+      taken:[10,11,9,12,10,10,8,12,13,15],
+      tickets:[
+        {id:"T-014", date:"27 Aug 2026", filer:"Renata Kovač (handler)",
+          quote:"this is the quietest I've seen him since he joined, going on two years now... the difference is hard to miss."},
+        {id:"T-024", date:"4 Sep 2026", filer:"Stormwrack (responder, mobile)",
+          quote:"anyone know why its been so dead. not complaining just curious if its just me"}
+      ],
+      verdict:"contradicted",
+      verdictLabel:"Contradicted",
+      note:"His offers are climbing all through this window — 13 a week in June to 19 by late August, with offers taken climbing too. Nothing in the record looks \"quiet\" for him."
+    },
+    "The Drift": {
+      handler:"Beatrice Calloway",
+      sent:[6,6,7,6,6,6,7,7,8,8],
+      taken:[5,5,6,5,5,5,4,5,6,5],
+      tickets:[
+        {id:"T-022", date:"3 Sep 2026", filer:"Beatrice Calloway (handler)",
+          quote:"The Drift has gone almost three weeks with barely anything, two callouts total in that span where he'd normally see two or three a week."},
+        {id:"T-023", date:"3 Sep 2026", filer:"The Drift (responder, mobile)",
+          quote:"first one in weeks and it vanished before i could even swipe. of course"}
+      ],
+      verdict:"partial",
+      verdictLabel:"Partial — right problem, wrong description",
+      note:"His weekly offers stay steady-to-slightly-up the whole time — not the near-total drought the ticket describes. The lost-offer complaint is plausible on its own (the shorter timeout), but the \"barely anything for three weeks\" framing isn't what the numbers show."
+    },
+    "The Longcast": {
+      handler:"Graham Petrov",
+      sent:[7,7,8,7,7,7,8,8,9,9],
+      taken:[5,5,7,5,5,5,5,6,5,7],
+      tickets:[
+        {id:"T-007", date:"20 Aug 2026", filer:"The Longcast (responder, mobile)",
+          quote:"phone buzzed, by the time i unlocked it, gone. second time this week"},
+        {id:"T-012", date:"25 Aug 2026", filer:"Graham Petrov (handler)",
+          quote:"gone quiet again this week after picking up two callouts last week. On and off like this for about a month now."}
+      ],
+      verdict:"partial",
+      verdictLabel:"Partial — right problem, wrong description",
+      note:"The missed-offer complaint lines up with the timeout cut. The \"on and off\" pattern is real week-to-week, but his overall trend is flat to slightly up, not a decline — he's not one of the responders actually losing offers."
+    },
+    "The Undertow": {
+      handler:"Desmond Okafor",
+      sent:[12,11,12,13,12,12,11,4,1,1],
+      taken:[9,9,9,10,10,9,4,1,0,0],
+      tickets:[
+        {id:"T-005", date:"19 Aug 2026", filer:"Desmond Okafor (handler)",
+          quote:"The Undertow has had one callout since the start of the month, which is well below his usual pace. He's aquatic-tagged and there's been no shortage of incidents that would need that tag."},
+        {id:"T-013", date:"26 Aug 2026", filer:"The Undertow (responder, mobile)",
+          quote:"nothing again this week. starting to wonder if im still even in the system"},
+        {id:"T-019", date:"31 Aug 2026", filer:"Desmond Okafor (handler)",
+          quote:"Something finally came in for The Undertow today after two weeks of nothing, and he lost it before he could answer — he told me it was gone by the time he'd even finished reading who it was for."}
+      ],
+      verdict:"confirmed",
+      verdictLabel:"Confirmed",
+      note:"Matches the data closely. Offers collapse from 11–13 a week to 4, then 1, right after the release — one of the two worst cases in the roster, along with Farlight."
+    },
+    "Vesper": {
+      handler:"Aunt Dot",
+      sent:[14,13,15,14,13,14,12,5,2,1],
+      taken:[11,10,13,11,11,12,6,1,0,0],
+      tickets:[],
+      verdict:"silent",
+      verdictLabel:"Silent but real",
+      note:"No ticket filed. Her data is just as bad as Farlight's or The Undertow's — offers fall from 12–15 a week to 5, then 2, then 1 — but none of it shows up in the ticket queue. Only surfaced because Aunt Dot mentioned it in an interview."
+    }
+  };
+
+  var order = ["Farlight","The Undertow","Meteor Mite","Vesper","Ironvale","Nightwell","Stormwrack",
+    "Corporal Ashgrove","Halfmoon","Cindermark","The Drift","The Longcast","Sgt. Falkirk","Captain Vantage"];
+
+  var dotColor = {confirmed:"var(--good)", contradicted:"var(--below)", partial:"var(--warn)", silent:"var(--below)"};
+
+  var roster = document.getElementById('roster');
+  order.forEach(function(name){
+    var d = D[name];
+    var btn = document.createElement('button');
+    btn.className = 'roster-item';
+    btn.dataset.name = name;
+    btn.innerHTML = '<span class="name">'+name+'</span><span class="chip" style="background:'+dotColor[d.verdict]+(d.verdict==="silent" ? ";border:1.5px solid var(--below);background:transparent" : "")+'"></span>';
+    btn.addEventListener('click', function(){ select(name); });
+    roster.appendChild(btn);
+  });
+
+  function escapeHtml(s){
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function buildChart(sent, taken){
+    var w = 900, h = 130, padL = 36, padR = 10, padT = 10, padB = 20;
+    var n = sent.length;
+    var max = Math.max.apply(null, sent.concat(taken)) + 2;
+    var stepX = (w - padL - padR) / (n - 1);
+    function x(i){ return padL + i*stepX; }
+    function y(v){ return padT + (h-padT-padB) * (1 - v/max); }
+
+    function path(arr){
+      return arr.map(function(v,i){ return (i===0?'M':'L') + x(i).toFixed(1) + ',' + y(v).toFixed(1); }).join(' ');
+    }
+    function areaPath(arr){
+      var top = arr.map(function(v,i){ return (i===0?'M':'L') + x(i).toFixed(1) + ',' + y(v).toFixed(1); }).join(' ');
+      return top + ' L' + x(n-1).toFixed(1) + ',' + y(0).toFixed(1) + ' L' + x(0).toFixed(1) + ',' + y(0).toFixed(1) + ' Z';
+    }
+
+    var relX = x(RELEASE_IDX);
+    var gridLines = '';
+    for (var gv = 0; gv <= max; gv += Math.ceil(max/4)) {
+      gridLines += '<line x1="'+padL+'" y1="'+y(gv).toFixed(1)+'" x2="'+(w-padR)+'" y2="'+y(gv).toFixed(1)+'" stroke="var(--border)" stroke-width="1"/>';
+      gridLines += '<text x="'+(padL-8)+'" y="'+(y(gv)+3).toFixed(1)+'" text-anchor="end" font-family="var(--font-mono)" font-size="9.5" fill="var(--fg-muted)">'+gv+'</text>';
+    }
+
+    var dotsSent = sent.map(function(v,i){ return '<circle cx="'+x(i).toFixed(1)+'" cy="'+y(v).toFixed(1)+'" r="2.4" fill="var(--fg-muted)"/>'; }).join('');
+    var dotsTaken = taken.map(function(v,i){ return '<circle cx="'+x(i).toFixed(1)+'" cy="'+y(v).toFixed(1)+'" r="3" fill="var(--accent)"/>'; }).join('');
+
+    return '<svg class="chart" viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg">' +
+      gridLines +
+      '<line x1="'+relX.toFixed(1)+'" y1="'+padT+'" x2="'+relX.toFixed(1)+'" y2="'+(h-padB)+'" stroke="var(--below)" stroke-width="1.5" stroke-dasharray="4,3"/>' +
+      '<text x="'+(relX+4).toFixed(1)+'" y="'+(padT+10)+'" font-family="var(--font-mono)" font-size="9.5" fill="var(--below)">4.2</text>' +
+      '<path d="'+areaPath(taken)+'" fill="var(--accent)" fill-opacity="0.12" stroke="none"/>' +
+      '<path d="'+path(sent)+'" fill="none" stroke="var(--fg-muted)" stroke-width="1.6" stroke-dasharray="3,2"/>' +
+      '<path d="'+path(taken)+'" fill="none" stroke="var(--accent)" stroke-width="2.4"/>' +
+      dotsSent + dotsTaken +
+      '</svg>';
+  }
+
+  function select(name){
+    var d = D[name];
+    Array.prototype.forEach.call(roster.querySelectorAll('.roster-item'), function(el){
+      el.classList.toggle('active', el.dataset.name === name);
+    });
+
+    var ticketsHtml;
+    if (d.tickets.length === 0) {
+      ticketsHtml = '<div class="ticket-block none">No ticket was ever filed for '+escapeHtml(name)+' &mdash; not by a handler, not by the responder.</div>';
+    } else {
+      ticketsHtml = d.tickets.map(function(t){
+        return '<div class="ticket-block">' +
+          '<div class="ticket-meta"><span>'+t.id+'</span><span>'+t.date+'</span><span>'+escapeHtml(t.filer)+'</span></div>' +
+          '<blockquote>“'+escapeHtml(t.quote)+'”</blockquote>' +
+        '</div>';
+      }).join('');
+    }
+
+    var numrowSent = d.sent.map(function(v){ return '<div>'+v+'</div>'; }).join('');
+    var numrowTaken = d.taken.map(function(v){ return '<div>'+v+'</div>'; }).join('');
+    var weekLabels = weeks.map(function(w){ return '<div>'+w+'</div>'; }).join('');
+
+    document.getElementById('case').innerHTML =
+      '<div class="case-head">' +
+        '<div><p class="case-name">'+escapeHtml(name)+'</p><p class="case-handler">Handler: '+escapeHtml(d.handler)+'</p></div>' +
+        '<span class="verdict '+d.verdict+'">'+escapeHtml(d.verdictLabel)+'</span>' +
+      '</div>' +
+      '<p class="section-label">What the ticket says</p>' +
+      ticketsHtml +
+      '<p class="section-label">What the data actually shows</p>' +
+      '<div class="chart-wrap">' +
+        '<div class="chart-key">' +
+          '<span><span class="sw" style="background:var(--accent)"></span>Offers taken</span>' +
+          '<span><span class="sw" style="background:var(--fg-muted)"></span>Offers sent</span>' +
+          '<span><span class="sw" style="background:var(--below)"></span>4.2 released (12 Aug)</span>' +
+        '</div>' +
+        buildChart(d.sent, d.taken) +
+        '<div class="numrow">'+weekLabels+'</div>' +
+        '<div class="numrow" style="color:var(--fg)">'+numrowTaken+'</div>' +
+      '</div>' +
+      '<p class="section-label">Reconciliation</p>' +
+      '<div class="verdict-note">'+d.note+'</div>';
+  }
+
+  select(order[0]);
+})();
+</script>

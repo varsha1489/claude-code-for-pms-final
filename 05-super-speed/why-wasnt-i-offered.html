@@ -1,0 +1,430 @@
+<title>Why Wasn't I Offered</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  /* Layout: console header, responder picker, two input panels (real data vs. assumptions),
+     then a segmented score bar with a plain-English readout underneath. */
+  :root {
+    --bg: #eef1ee; --panel: #ffffff; --panel-2: #f3f5f2;
+    --fg: #15201c; --fg-muted: #5c6a64; --border: #d6ddd8;
+    --accent: #0d7d6e; --accent-fg: #ffffff;
+    --warn: #9a6700; --warn-bg: #fbeedb;
+    --good: #156b3a; --good-bg: #e2f3e8;
+    --below: #b3261e; --below-bg: #fbeae8;
+    --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #101512; --panel: #171e1a; --panel-2: #1c2420;
+      --fg: #eaf0ec; --fg-muted: #9aa8a2; --border: #2a332e;
+      --accent: #3fd9bf; --accent-fg: #06201b;
+      --warn: #ffc55c; --warn-bg: #2c2410;
+      --good: #6fd99a; --good-bg: #0f2a1b;
+      --below: #ff8177; --below-bg: #2c1613;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #101512; --panel: #171e1a; --panel-2: #1c2420;
+    --fg: #eaf0ec; --fg-muted: #9aa8a2; --border: #2a332e;
+    --accent: #3fd9bf; --accent-fg: #06201b;
+    --warn: #ffc55c; --warn-bg: #2c2410;
+    --good: #6fd99a; --good-bg: #0f2a1b;
+    --below: #ff8177; --below-bg: #2c1613;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-sans);
+    margin: 0;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 28px 48px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent);
+  }
+  h1 { font-size: 26px; font-weight: 700; margin: 4px 0 2px; text-wrap: balance; letter-spacing: -0.01em; }
+  .sub { color: var(--fg-muted); font-size: 14px; max-width: 60ch; line-height: 1.5; margin: 0; }
+
+  .panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px; display: flex; flex-direction: column; gap: 14px;
+  }
+  .panel-label {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--fg-muted);
+    display: flex; align-items: center; gap: 8px; min-width: 0;
+  }
+  .tag {
+    font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+    letter-spacing: 0.04em; padding: 2px 7px; border-radius: 4px; white-space: nowrap;
+  }
+  .tag.real { background: var(--good-bg); color: var(--good); }
+  .tag.assumed { background: var(--warn-bg); color: var(--warn); }
+
+  select {
+    font-family: var(--font-sans); font-size: 16px; font-weight: 600; color: var(--fg);
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px 12px; width: 100%; appearance: none;
+  }
+
+  .row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .big-score { font-family: var(--font-mono); font-size: 34px; font-weight: 600; letter-spacing: -0.02em; }
+  .score-ctx { font-size: 13px; color: var(--fg-muted); line-height: 1.5; min-width: 0; }
+
+  .sparkline-row { display: flex; align-items: center; gap: 12px; }
+  svg.spark { flex: none; }
+  .spark-note { font-size: 12px; color: var(--fg-muted); line-height: 1.4; min-width: 0; }
+
+  .slider-block { display: flex; flex-direction: column; gap: 8px; }
+  .slider-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .slider-head .name { font-size: 14px; font-weight: 600; }
+  .slider-head .val { font-family: var(--font-mono); font-size: 14px; color: var(--accent); font-weight: 600; white-space: nowrap; }
+  input[type="range"] {
+    width: 100%; accent-color: var(--accent); height: 20px; margin: 0;
+  }
+  .toggle-row { display: flex; gap: 8px; }
+  .toggle-btn {
+    flex: 1; font-family: var(--font-sans); font-size: 14px; font-weight: 600;
+    padding: 10px 10px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--panel-2); color: var(--fg-muted); cursor: pointer;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+  .toggle-btn.active.match { background: var(--good-bg); color: var(--good); border-color: var(--good); }
+  .toggle-btn.active.nomatch { background: var(--below-bg); color: var(--below); border-color: var(--below); }
+
+  .breakdown-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .composite-num { font-family: var(--font-mono); font-size: 40px; font-weight: 600; letter-spacing: -0.02em; }
+  .composite-label { font-size: 13px; color: var(--fg-muted); }
+
+  .bar { display: flex; height: 28px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); background: var(--panel-2); }
+  .seg { height: 100%; transition: width 0.2s ease; min-width: 0; }
+  .seg.proximity { background: var(--accent); }
+  .seg.history { background: var(--warn); }
+  .seg.capability { background: var(--good); }
+
+  .legend { display: flex; flex-direction: column; gap: 9px; }
+  .legend-item { display: grid; grid-template-columns: 14px 1fr auto; align-items: center; gap: 10px; min-width: 0; }
+  .swatch { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+  .swatch.proximity { background: var(--accent); }
+  .swatch.history { background: var(--warn); }
+  .swatch.capability { background: var(--good); }
+  .legend-name { font-size: 13px; font-weight: 600; min-width: 0; }
+  .legend-sub { font-size: 12px; color: var(--fg-muted); }
+  .legend-num { font-family: var(--font-mono); font-size: 13px; font-weight: 600; white-space: nowrap; }
+
+  .explain {
+    border-radius: 8px; padding: 14px 16px; font-size: 15px; line-height: 1.5; font-weight: 500;
+  }
+  .explain.good { background: var(--good-bg); color: var(--good); }
+  .explain.warn { background: var(--warn-bg); color: var(--warn); }
+  .explain.below { background: var(--below-bg); color: var(--below); }
+
+  .footnote {
+    font-size: 12px; color: var(--fg-muted); line-height: 1.6; border-top: 1px solid var(--border);
+    padding-top: 14px; margin-top: 4px;
+  }
+  .footnote code { font-family: var(--font-mono); font-size: 11px; background: var(--panel-2); padding: 1px 4px; border-radius: 3px; }
+
+  @media (max-width: 480px) {
+    h1 { font-size: 22px; }
+    .big-score { font-size: 28px; }
+    .composite-num { font-size: 32px; }
+  }
+</style>
+
+<div class="wrap">
+  <div>
+    <div class="eyebrow">Rook Dispatch · Handler Console</div>
+    <h1>Why wasn't I offered?</h1>
+    <p class="sub">Pick a responder to see the real math behind their last ranking — how much proximity, recent acceptance, and capability match counted, and what's pulling their score up or down.</p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">Responder</div>
+    <select id="responderSelect"></select>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">Recent-acceptance score <span class="tag real">REAL — computed from callout-history.csv</span></div>
+    <div class="row">
+      <div class="big-score" id="historyScoreNum">—</div>
+      <div class="score-ctx" id="historyScoreNote">—</div>
+    </div>
+    <div class="sparkline-row">
+      <svg class="spark" id="sparkSvg" width="220" height="40" viewBox="0 0 220 40"></svg>
+      <div class="spark-note">Week by week, 29 Jun – 31 Aug 2026. Starts at 0.50. +0.08 per callout taken that week, −0.12 per callout missed (sent minus taken), held between 0 and 1.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">This job <span class="tag assumed">ASSUMED — nobody has real travel-time data yet</span></div>
+    <div class="slider-block">
+      <div class="slider-head">
+        <span class="name">Distance to this job</span>
+        <span class="val" id="distanceVal">20 min</span>
+      </div>
+      <input type="range" id="distanceSlider" min="0" max="60" step="1" value="20">
+    </div>
+    <div class="slider-block">
+      <div class="slider-head">
+        <span class="name">Capability match</span>
+      </div>
+      <div class="toggle-row">
+        <button class="toggle-btn match" id="matchBtn" type="button">Matches</button>
+        <button class="toggle-btn nomatch" id="nomatchBtn" type="button">Doesn't match</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="breakdown-head">
+      <div>
+        <div class="panel-label" style="margin-bottom:4px;">Score breakdown</div>
+        <div class="composite-num" id="compositeNum">—</div>
+        <div class="composite-label">composite ranking score (0–1, higher ranks first)</div>
+      </div>
+    </div>
+
+    <div class="bar">
+      <div class="seg proximity" id="segProximity"></div>
+      <div class="seg history" id="segHistory"></div>
+      <div class="seg capability" id="segCapability"></div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <div class="swatch proximity"></div>
+        <div>
+          <div class="legend-name">Proximity</div>
+          <div class="legend-sub" id="proximitySub">—</div>
+        </div>
+        <div class="legend-num" id="proximityNum">—</div>
+      </div>
+      <div class="legend-item">
+        <div class="swatch history"></div>
+        <div>
+          <div class="legend-name">Recent acceptance</div>
+          <div class="legend-sub" id="historySub">—</div>
+        </div>
+        <div class="legend-num" id="historyNum">—</div>
+      </div>
+      <div class="legend-item">
+        <div class="swatch capability"></div>
+        <div>
+          <div class="legend-name">Capability match</div>
+          <div class="legend-sub" id="capabilitySub">—</div>
+        </div>
+        <div class="legend-num" id="capabilityNum">—</div>
+      </div>
+    </div>
+
+    <div class="explain" id="explainBox">—</div>
+  </div>
+
+  <div class="footnote">
+    Weights (<code>config.py</code>): proximity 0.60, recent acceptance 0.25, capability match 0.15. Proximity scores 0 past 45 minutes away (<code>PROXIMITY_HORIZON_MINUTES</code>). Accept/decline math from <code>history.py</code>: +0.08 per accepted callout, −0.12 per decline or timeout — scored identically, and the penalty never decays on its own. Recent-acceptance scores here are computed directly from <code>callout-history.csv</code>; distance and capability match are assumptions you're setting, not measured data.
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // Real weekly ping data (week_starting, pings_sent, pings_taken) from callout-history.csv,
+  // for every responder in the file. Trail = recent-acceptance score after each week.
+  var WEEKS = ["Jun 29","Jul 6","Jul 13","Jul 20","Jul 27","Aug 3","Aug 10","Aug 17","Aug 24","Aug 31"];
+  var RAW = {
+    "Captain Vantage":  [[12,10],[13,10],[12,8],[11,7],[12,9],[12,9],[13,8],[15,11],[17,13],[18,13]],
+    "Cindermark":       [[9,7],[9,8],[8,6],[10,7],[9,7],[9,8],[10,6],[11,8],[12,8],[12,9]],
+    "Corporal Ashgrove":[[10,8],[11,9],[10,7],[9,7],[10,8],[10,8],[10,6],[8,5],[7,5],[7,5]],
+    "Farlight":         [[12,9],[12,9],[11,8],[12,9],[13,10],[12,8],[10,4],[3,0],[1,0],[0,0]],
+    "Halfmoon":         [[11,8],[10,7],[11,8],[12,8],[11,9],[11,8],[11,6],[9,5],[8,5],[8,7]],
+    "Ironvale":         [[8,6],[8,5],[9,8],[8,6],[7,5],[8,7],[9,5],[10,6],[11,8],[12,9]],
+    "Meteor Mite":      [[11,7],[12,9],[10,6],[11,7],[12,9],[11,8],[10,4],[4,1],[2,0],[1,0]],
+    "Nightwell":        [[15,11],[14,10],[15,12],[16,12],[15,11],[15,12],[16,9],[18,14],[20,13],[21,15]],
+    "Sgt. Bulwark":     [[9,7],[9,7],[10,8],[9,7],[8,5],[9,7],[10,5],[10,8],[11,7],[11,8]],
+    "Sgt. Falkirk":     [[10,9],[10,8],[11,8],[10,8],[9,7],[10,8],[11,7],[13,9],[15,11],[16,11]],
+    "Stormwrack":       [[13,10],[13,11],[12,9],[14,12],[13,10],[13,10],[14,8],[16,12],[18,13],[19,15]],
+    "The Drift":        [[6,5],[6,5],[7,6],[6,5],[6,5],[6,5],[7,4],[7,5],[8,6],[8,5]],
+    "The Gale":         [[13,10],[12,9],[13,10],[14,11],[13,11],[13,10],[15,9],[17,12],[20,14],[21,16]],
+    "The Longcast":     [[7,5],[7,5],[8,7],[7,5],[7,5],[7,5],[8,5],[8,6],[9,5],[9,7]],
+    "The Undertow":     [[12,9],[11,9],[12,9],[13,10],[12,10],[12,9],[11,4],[4,1],[1,0],[1,0]],
+    "Vesper":           [[14,11],[13,10],[15,13],[14,11],[13,11],[14,12],[12,6],[5,1],[2,0],[1,0]]
+  };
+
+  var ACCEPT = 0.08, DECLINE = 0.12;
+  function buildTrail(pairs) {
+    var score = 0.5;
+    var trail = [score];
+    for (var i = 0; i < pairs.length; i++) {
+      var sent = pairs[i][0], taken = pairs[i][1], missed = sent - taken;
+      score = score + ACCEPT * taken - DECLINE * missed;
+      score = Math.max(0, Math.min(1, score));
+      trail.push(score);
+    }
+    return trail;
+  }
+
+  var RESPONDERS = {};
+  Object.keys(RAW).forEach(function (name) {
+    var trail = buildTrail(RAW[name]);
+    RESPONDERS[name] = { trail: trail, current: trail[trail.length - 1] };
+  });
+
+  var WEIGHT_PROXIMITY = 0.60, WEIGHT_HISTORY = 0.25, WEIGHT_CAPABILITY = 0.15;
+  var HORIZON = 45;
+
+  var state = { responder: "Farlight", distance: 20, matches: true };
+
+  var els = {
+    select: document.getElementById("responderSelect"),
+    historyScoreNum: document.getElementById("historyScoreNum"),
+    historyScoreNote: document.getElementById("historyScoreNote"),
+    spark: document.getElementById("sparkSvg"),
+    distanceSlider: document.getElementById("distanceSlider"),
+    distanceVal: document.getElementById("distanceVal"),
+    matchBtn: document.getElementById("matchBtn"),
+    nomatchBtn: document.getElementById("nomatchBtn"),
+    compositeNum: document.getElementById("compositeNum"),
+    segProximity: document.getElementById("segProximity"),
+    segHistory: document.getElementById("segHistory"),
+    segCapability: document.getElementById("segCapability"),
+    proximitySub: document.getElementById("proximitySub"),
+    proximityNum: document.getElementById("proximityNum"),
+    historySub: document.getElementById("historySub"),
+    historyNum: document.getElementById("historyNum"),
+    capabilitySub: document.getElementById("capabilitySub"),
+    capabilityNum: document.getElementById("capabilityNum"),
+    explainBox: document.getElementById("explainBox")
+  };
+
+  // populate dropdown, sorted alphabetically
+  Object.keys(RESPONDERS).sort().forEach(function (name) {
+    var opt = document.createElement("option");
+    opt.value = name;
+    opt.textContent = name;
+    if (name === state.responder) opt.selected = true;
+    els.select.appendChild(opt);
+  });
+
+  function fmt(n) { return n.toFixed(2); }
+
+  function drawSpark(trail) {
+    var w = 220, h = 40, pad = 4;
+    var min = 0, max = 1;
+    var step = (w - pad * 2) / (trail.length - 1);
+    var pts = trail.map(function (v, i) {
+      var x = pad + i * step;
+      var y = h - pad - ((v - min) / (max - min)) * (h - pad * 2);
+      return [x, y];
+    });
+    var path = pts.map(function (p, i) { return (i === 0 ? "M" : "L") + p[0].toFixed(1) + "," + p[1].toFixed(1); }).join(" ");
+    var css = getComputedStyle(document.documentElement);
+    var accent = css.getPropertyValue("--accent").trim();
+    var muted = css.getPropertyValue("--border").trim();
+    var last = pts[pts.length - 1];
+    var svg = ""
+      + '<line x1="' + pad + '" y1="' + (h - pad - ((0.5 - min) / (max - min)) * (h - pad * 2)).toFixed(1) + '" x2="' + (w - pad) + '" y2="' + (h - pad - ((0.5 - min) / (max - min)) * (h - pad * 2)).toFixed(1) + '" stroke="' + muted + '" stroke-width="1" stroke-dasharray="2,3" />'
+      + '<path d="' + path + '" fill="none" stroke="' + accent + '" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" />'
+      + '<circle cx="' + last[0].toFixed(1) + '" cy="' + last[1].toFixed(1) + '" r="3" fill="' + accent + '" />';
+    els.spark.innerHTML = svg;
+  }
+
+  function render() {
+    var r = RESPONDERS[state.responder];
+    var historyScore = r.current;
+
+    els.historyScoreNum.textContent = fmt(historyScore);
+    var startedAt = 0.5;
+    var direction = historyScore > startedAt ? "up" : historyScore < startedAt ? "down" : "unchanged";
+    els.historyScoreNote.textContent = "Started the summer at 0.50 (neutral). Thirteen weeks of real callouts moved it " + direction + " to " + fmt(historyScore) + ".";
+    drawSpark(r.trail);
+
+    els.distanceVal.textContent = state.distance + " min";
+    els.matchBtn.classList.toggle("active", state.matches);
+    els.nomatchBtn.classList.toggle("active", !state.matches);
+
+    var proximityRaw = state.distance >= HORIZON ? 0 : 1 - (state.distance / HORIZON);
+    var capabilityRaw = state.matches ? 1 : 0;
+
+    var proximityContribution = WEIGHT_PROXIMITY * proximityRaw;
+    var historyContribution = WEIGHT_HISTORY * historyScore;
+    var capabilityContribution = WEIGHT_CAPABILITY * capabilityRaw;
+    var composite = proximityContribution + historyContribution + capabilityContribution;
+
+    els.compositeNum.textContent = fmt(composite);
+
+    var totalWidthBasis = WEIGHT_PROXIMITY + WEIGHT_HISTORY + WEIGHT_CAPABILITY; // 1.0
+    els.segProximity.style.width = ((proximityContribution / totalWidthBasis) * 100).toFixed(1) + "%";
+    els.segHistory.style.width = ((historyContribution / totalWidthBasis) * 100).toFixed(1) + "%";
+    els.segCapability.style.width = ((capabilityContribution / totalWidthBasis) * 100).toFixed(1) + "%";
+
+    els.proximitySub.textContent = "Weight 0.60 · " + state.distance + " min away → " + proximityRaw.toFixed(2) + " of 1.00" + (state.distance >= HORIZON ? " (past the 45-min cutoff, counts as zero)" : "");
+    els.proximityNum.textContent = "+" + fmt(proximityContribution);
+
+    els.historySub.textContent = "Weight 0.25 · real score " + fmt(historyScore) + " of 1.00, from callout-history.csv";
+    els.historyNum.textContent = "+" + fmt(historyContribution);
+
+    els.capabilitySub.textContent = "Weight 0.15 · " + (state.matches ? "has the tags this job needs" : "missing a tag this job needs");
+    els.capabilityNum.textContent = "+" + fmt(capabilityContribution);
+
+    // plain-English readout: find the weakest and strongest axis relative to each one's own ceiling
+    var axes = [
+      { key: "proximity", raw: proximityRaw, name: "being far from this job" },
+      { key: "history", raw: historyScore, name: "a recent-acceptance score that hasn't recovered" },
+      { key: "capability", raw: capabilityRaw, name: "a capability mismatch" }
+    ];
+    var weakest = axes.slice().sort(function (a, b) { return a.raw - b.raw; })[0];
+    var strongest = axes.slice().sort(function (a, b) { return b.raw - a.raw; })[0];
+
+    var tone, headline;
+    if (composite >= 0.75) {
+      tone = "good";
+      headline = "This responder ranks near the top for this job. Nothing is dragging them down much.";
+    } else if (weakest.raw <= 0.15) {
+      tone = "below";
+      if (weakest.key === "history") {
+        headline = "The recent-acceptance score is what's sinking this: " + fmt(historyScore) + " out of 1.00, and it only recovers by them accepting more offers — which is hard if they're not being offered much.";
+      } else if (weakest.key === "proximity") {
+        headline = "Distance is what's sinking this: " + state.distance + " minutes away is near or past the 45-minute cutoff, so proximity is contributing little or nothing.";
+      } else {
+        headline = "The capability mismatch is what's sinking this: this job needs a tag they don't have, so that 0.15 of the score is gone.";
+      }
+    } else {
+      tone = "warn";
+      headline = "Mid-table ranking. " + weakest.name.charAt(0).toUpperCase() + weakest.name.slice(1) + " is holding the score back, while " + strongest.name + " is overstated — check: " + (strongest.key === "history" ? "their recent-acceptance score is carrying them." : strongest.key === "proximity" ? "they're close by right now." : "they match the capability needed.");
+    }
+    els.explainBox.className = "explain " + tone;
+    els.explainBox.textContent = headline;
+  }
+
+  els.select.addEventListener("change", function () {
+    state.responder = els.select.value;
+    render();
+  });
+  els.distanceSlider.addEventListener("input", function () {
+    state.distance = Number(els.distanceSlider.value);
+    render();
+  });
+  els.matchBtn.addEventListener("click", function () {
+    state.matches = true;
+    render();
+  });
+  els.nomatchBtn.addEventListener("click", function () {
+    state.matches = false;
+    render();
+  });
+
+  render();
+})();
+</script>
