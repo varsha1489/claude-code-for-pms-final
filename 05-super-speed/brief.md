@@ -105,12 +105,37 @@ We've asked Ravi for travel-time data to confirm this before we recommend
 touching the weights themselves. Second Chance doesn't need that answer —
 it works regardless of *why* someone went quiet.
 
+## Build order — we don't have to wait on engineering to start helping people
+
+Second Chance and the timeout-penalty fix are the core ask below, and they
+take real engineering time. In parallel, three things can start immediately,
+each one not dependent on the others or on Ravi's data landing first:
+
+**#1 — starting now.** A guaranteed-offer override a handler can trigger by
+hand today, for Farlight, Meteor Mite, The Undertow, and Vesper specifically
+— the same idea as Second Chance, done manually, with the same travel-range
+safety check, live before any code ships. Clickable prototype:
+**Guaranteed Offer Override**. This is the one that actually reaches the
+four people who need it, this week, not after a build cycle.
+
+**#2 — fast follow.** A reconciliation check between tickets and the real
+weekly data, so Nadia's team stops chasing false "gone quiet" tickets
+(Ironvale, Nightwell, Stormwrack all showed *rising* offers while filing
+them) and stops missing real ones the way it missed Meteor Mite and Vesper.
+
+**#3 — fast follow.** An explainer on the handler's console showing why a
+responder ranked where they did for a given callout. This is a durable,
+every-time answer to the question Marcus asked on 14 Aug, not a one-off
+reply in Slack.
+
 ## The ask
 
 Approve Second Chance (plus the early-warning tier) as the thing to
 actually build — on its own, not bundled with a decision about reverting or
 reweighting 4.2. The no-decay patch should still ship, separately, since
-it's safe either way. Wen's back from PTO and is the natural owner on the
-engineering side, since her own 2019 comment on the routing code is where
-this whole question started. Full findings and the evidence behind all of
-this are in `notes/responder-priority-and-pov.md`.
+it's safe either way. We're starting on #1 above immediately and will fast
+follow with #2 and #3 while the main build is underway. Wen's back from PTO
+and is the natural owner on the engineering side, since her own 2019
+comment on the routing code is where this whole question started. Full
+findings and the evidence behind all of this are in
+`notes/responder-priority-and-pov.md`.

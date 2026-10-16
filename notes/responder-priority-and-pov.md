@@ -515,3 +515,36 @@ intentioned, untested against who it actually affects.
 **In one sentence:** fix the bug that has no downside, protect the people
 already hurt while that happens, and hold the harder decision until the
 data already asked for comes back.
+
+## Confidence scoring (16 Oct 2026)
+
+**Before the Recovery Rule Simulator: 62/100** on the brief and the
+direction. High confidence (~90) in the problem diagnosis; lower (~55–60)
+in whether Second Chance, as written, was the right single thing to build —
+it didn't account for a travel-range safety check or the declining-but-not-
+collapsed group (Ashgrove, Halfmoon).
+
+**After the simulator: 72/100.** Two findings moved in opposite directions:
+
+- **Up:** the simulator gives a specific, testable engineering
+  recommendation — weakening the timeout penalty does almost all the work
+  for the 4 collapsed responders; drift alone barely moves them in just 4
+  weeks. That's sharper than "patch the no-decay bug" and it's backed by
+  real numbers, not a hunch. The decliner test also *proves*, not just
+  asserts, that a genuine persistent decliner stays at the floor under every
+  rule — the exact objection this proposal will get pushback on, pre-empted
+  with a number.
+- **Down:** Ashgrove and Halfmoon stay near the ceiling under every rule
+  tried. Their score was never the problem — which means fixing the scoring
+  mechanism (drift, timeout penalty, or both) won't actually help them. The
+  early-warning tier in `brief.md` still has value as visibility, but it
+  doesn't *solve* their case the way the timeout fix solves the collapsed
+  four's. Whatever's suppressing their offers is something the simulator
+  can't see — almost certainly the same proximity question still waiting on
+  Ravi.
+
+**Net read:** more confident about what the engineering fix should
+specifically be; less able to claim the brief covers everyone. The
+proximity data is now an even higher-leverage ask than before, since it's
+the one explanation left standing for the early-stage group once scoring
+has been ruled out.
