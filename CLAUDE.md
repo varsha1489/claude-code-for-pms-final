@@ -243,6 +243,33 @@ regroup, isolate the bug from the "should we revert 4.2" question — don't
 relitigate the weight change itself; hold off on recommending the weight
 numbers change back until the proximity data confirms or kills that theory.
 
+### Director brief and prototypes (17 Oct 2026)
+Answered Helen's note in `05-super-speed/director-request.txt` with
+`05-super-speed/brief.md` — the **Second Chance** proposal (a guaranteed
+offer after 7 days of silence, travel-range safeguard, early-warning tier
+for decliners not yet at zero) — and `director-ask-one-pager.md` (what she
+actually asked for, kept separate from the answer). Built 3 clickable
+prototypes, each saved under `05-super-speed/` and refined through two
+rounds of simulated feedback in character as the most-affected responders
+(Vesper, Meteor Mite, Farlight, The Undertow):
+- **Guaranteed Offer Override** — the manual stopgap; now has a 3-minute
+  timeout window, capped retries with handler escalation instead of an
+  implied infinite wait, and a "tell the responder" visibility default.
+- **Ticket Data Reconciliation** — for Nadia's team; now has a "Next step"
+  on every verdict and a severity-tiered "Needs attention" panel that finds
+  declines automatically, ticket or no ticket.
+- **Why Wasn't I Offered** — the routing explainer; now visually
+  distinguishes real vs. assumed inputs, links low scores to the actual
+  fixes, and states who sees it and that it's a snapshot, not a verdict.
+- A recurring theme across all three feedback rounds: "flagged" or
+  "confirmed" isn't the same as "acted on" — worth remembering as a
+  standing requirement for anything built next, not just these three.
+- **Confidence in the overall direction: 72/100** (see
+  `notes/responder-priority-and-pov.md`) — the engineering fix
+  recommendation is now sharp and data-backed, but Ashgrove/Halfmoon's case
+  still isn't explained by scoring at all, so the Ravi proximity-data ask
+  remains the open item.
+
 ### Roadmap loose ends (Q3 roadmap, rev. 30 Jun)
 - **Availability Confidence**, a confidence score shown next to stated availability
   and driven by support escalations, was *committed* for 4.2 but **does not appear in
