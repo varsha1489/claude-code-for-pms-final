@@ -148,6 +148,19 @@ that landed on the same conclusions the original investigation did,
 computed a second time, a different way. That's a stronger thing to put in
 front of Helen than three mockups would have been.
 
+## How we'll know it worked
+
+A single guaranteed offer isn't the finish line — accepting it only moves a
+score up by 0.08, and the four currently stuck (Vesper, Meteor Mite,
+Farlight, The Undertow) are sitting at 0.0–0.12. So the real check, a few
+weeks after shipping, is whether they're getting offered *again* after the
+guaranteed one — not just the single bump — meaning the floor is actually
+breaking the trap, not just giving each of them one courtesy job before they
+go quiet a second time. If any of them take the guaranteed offer and then
+flatline again, that's a sign the floor needs to be paired with the
+no-decay fix sooner rather than later, not a sign Second Chance failed on
+its own terms.
+
 ## The ask
 
 Approve Second Chance (plus the early-warning tier) as the thing to
