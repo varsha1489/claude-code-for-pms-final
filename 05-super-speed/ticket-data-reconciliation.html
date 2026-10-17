@@ -151,6 +151,58 @@ svg.chart{display:block; width:100%; min-width:520px; height:150px;}
 }
 .verdict-note b{color:var(--fg);}
 
+.next-note{
+  font-size:13.5px; line-height:1.6; padding:14px 16px; border-radius:12px;
+  background:var(--panel); border:1.5px solid var(--accent); margin-top:10px;
+}
+.next-note b{color:var(--accent);}
+
+.attention{
+  background:var(--panel); border:1px solid var(--border); border-radius:14px;
+  padding:16px 18px; margin-top:18px;
+}
+.attention-head{display:flex; align-items:baseline; justify-content:space-between; gap:10px; flex-wrap:wrap; margin-bottom:10px;}
+.attention-title{font-family:var(--font-mono); font-size:11.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--fg); font-weight:700; margin:0;}
+.attention-sub{font-size:12px; color:var(--fg-muted); margin:0;}
+.attention-tier{margin-top:12px;}
+.attention-tier:first-child{margin-top:0;}
+.attention-tier-label{
+  font-family:var(--font-mono); font-size:10px; letter-spacing:.06em; text-transform:uppercase;
+  font-weight:700; margin:0 0 8px;
+}
+.attention-tier-label.critical{color:var(--below);}
+.attention-tier-label.declining{color:var(--warn);}
+.attention-grid{display:flex; flex-wrap:wrap; gap:8px;}
+.attention-chip{
+  display:flex; align-items:center; gap:8px;
+  background:var(--panel-2); border:1.5px solid var(--border); border-radius:10px;
+  padding:8px 8px 8px 12px; font-family:var(--font-sans); font-size:13px; color:var(--fg);
+}
+.attention-chip.critical{border-color:var(--below); background:var(--below-bg);}
+.attention-chip.declining{border-color:var(--warn); background:var(--warn-bg);}
+.attention-chip .name-btn{
+  display:flex; align-items:center; gap:8px; background:none; border:none; cursor:pointer;
+  font-family:inherit; font-size:inherit; color:inherit; padding:0;
+}
+.attention-chip .pct{font-family:var(--font-mono); font-weight:700;}
+.attention-chip.critical .pct{color:var(--below);}
+.attention-chip.declining .pct{color:var(--warn);}
+.attention-chip .has-ticket{
+  font-family:var(--font-mono); font-size:9.5px; letter-spacing:.04em; text-transform:uppercase;
+  padding:2px 6px; border-radius:100px; background:var(--good-bg); color:var(--good);
+}
+.attention-chip .no-ticket{
+  font-family:var(--font-mono); font-size:9.5px; letter-spacing:.04em; text-transform:uppercase;
+  padding:2px 6px; border-radius:100px; border:1px dashed var(--below); color:var(--below);
+}
+.attention-chip .handle-btn{
+  font-family:var(--font-mono); font-size:10.5px; font-weight:600; cursor:pointer;
+  background:var(--panel); border:1px solid var(--border); border-radius:7px;
+  padding:4px 8px; color:var(--fg-muted); white-space:nowrap;
+}
+.attention-chip .handle-btn:hover{border-color:var(--accent); color:var(--accent);}
+.attention-resolved-note{font-size:11.5px; color:var(--fg-muted); margin-top:10px;}
+
 footer.note{
   margin-top:26px; font-size:12px; color:var(--fg-muted); line-height:1.6;
   border-top:1px solid var(--border); padding-top:14px;
@@ -169,6 +221,14 @@ footer.note{
       <span class="legend-pill"><span class="dot" style="border:1.5px dashed var(--below); background:transparent"></span>Silent but real &mdash; no ticket, real trouble</span>
     </div>
   </header>
+
+  <section class="attention" id="attention">
+    <div class="attention-head">
+      <p class="attention-title">Needs attention — found automatically, ticket or no ticket</p>
+      <p class="attention-sub">Anyone whose real weekly "taken" count dropped 25%+ from before 4.2 to now, regardless of whether anyone ever filed anything.</p>
+    </div>
+    <div id="attentionGrid"></div>
+  </section>
 
   <div class="layout">
     <nav class="roster" id="roster">
@@ -198,7 +258,8 @@ footer.note{
         quote:"Yesterday evening a callout came in and Captain Vantage was in the process of suiting up — coat and one boot on — when the offer moved along to someone else before he could get to his phone... I'd ask that whoever reviews this at least confirm the timing is what it's meant to be."}],
       verdict:"partial",
       verdictLabel:"Partial — right problem, wrong description",
-      note:"The one lost callout is real — it's the universal 60-second timeout, now live for everyone, not something broken on his account. But his own weekly numbers are rising the whole time, before and after the release. He's not a struggling case; one fast offer isn't evidence of a personal decline."
+      note:"The one lost callout is real — it's the universal 60-second timeout, now live for everyone, not something broken on his account. But his own weekly numbers are rising the whole time, before and after the release. He's not a struggling case; one fast offer isn't evidence of a personal decline.",
+      next:"No action on him personally — the lost-offer pattern matches the universal 60s timeout. Logged as a known issue, not an individual case."
     },
     "Cindermark": {
       handler:"Farid Haddad",
@@ -212,7 +273,8 @@ footer.note{
       ],
       verdict:"partial",
       verdictLabel:"Partial — right problem, wrong description",
-      note:"The missed-offer part is real (the 60s timeout, happening to lots of people now). The \"quiet for ten days\" part doesn't hold up — his weekly offers are steady-to-rising across the whole window, never dropping the way the ticket implies."
+      note:"The missed-offer part is real (the 60s timeout, happening to lots of people now). The \"quiet for ten days\" part doesn't hold up — his weekly offers are steady-to-rising across the whole window, never dropping the way the ticket implies.",
+      next:"No action on him personally — the lost-offer pattern matches the universal 60s timeout. Logged as a known issue, not an individual case."
     },
     "Corporal Ashgrove": {
       handler:"Yusuf Demir",
@@ -226,7 +288,8 @@ footer.note{
       ],
       verdict:"confirmed",
       verdictLabel:"Confirmed",
-      note:"Matches the data. His weekly offers taken drop from 7–9 before the release to 5 afterward, and stay there — a real, moderate decline, not a glitch."
+      note:"Matches the data. His weekly offers taken drop from 7–9 before the release to 5 afterward, and stay there — a real, moderate decline, not a glitch.",
+      next:"Flagged for the Dispatch PM as a confirmed, moderate decline — not urgent yet, but on the watch list."
     },
     "Farlight": {
       handler:"Linda Pruitt",
@@ -236,7 +299,8 @@ footer.note{
         quote:"Farlight has gone almost two weeks now without a single callout, which given her crowd-management tag surprises me... Raising this because she's started asking me directly, which she doesn't usually do."}],
       verdict:"confirmed",
       verdictLabel:"Confirmed",
-      note:"Matches the data exactly. Offers collapse from 10–13 a week to 3, then 1, then 0 right after the release — one of the two worst cases in the whole roster."
+      note:"Matches the data exactly. Offers collapse from 10–13 a week to 3, then 1, then 0 right after the release — one of the two worst cases in the whole roster.",
+      next:"Flagged for the Dispatch PM as a priority case — one of the two worst collapses in the roster."
     },
     "Halfmoon": {
       handler:"Simone Fischer",
@@ -250,7 +314,8 @@ footer.note{
       ],
       verdict:"partial",
       verdictLabel:"Partial — right problem, wrong description",
-      note:"There is a real dip — offers taken fall from 8–9 a week to 5–6 — but \"nothing\" overstates it. She kept getting offers most weeks; she just accepted fewer of them."
+      note:"There is a real dip — offers taken fall from 8–9 a week to 5–6 — but \"nothing\" overstates it. She kept getting offers most weeks; she just accepted fewer of them.",
+      next:"Real but modest dip — logged for the PM's declining-responders list, not urgent yet."
     },
     "Ironvale": {
       handler:"Teresa Alvarez",
@@ -266,7 +331,8 @@ footer.note{
       ],
       verdict:"contradicted",
       verdictLabel:"Contradicted",
-      note:"The data says the opposite of \"dead.\" Her weekly offers are actually trending up across this whole window (8 a week in June to 12 by late August), and offers taken recover too. Whatever she's experiencing, it isn't a drop in offers sent."
+      note:"The data says the opposite of \"dead.\" Her weekly offers are actually trending up across this whole window (8 a week in June to 12 by late August), and offers taken recover too. Whatever she's experiencing, it isn't a drop in offers sent.",
+      next:"No action on her — flag the ticket itself for Nadia's team to check, since the complaint doesn't match anything in the data."
     },
     "Meteor Mite": {
       handler:"Kip",
@@ -275,7 +341,8 @@ footer.note{
       tickets:[],
       verdict:"silent",
       verdictLabel:"Silent but real",
-      note:"No ticket filed — by handler or responder. But the data shows one of the worst collapses in the roster: offers fall from 10–12 a week to 4, then 2, then 1. Only known from an interview, not a single support ticket. Ticket volume alone would have missed this entirely."
+      note:"No ticket filed — by handler or responder. But the data shows one of the worst collapses in the roster: offers fall from 10–12 a week to 4, then 2, then 1. Only known from an interview, not a single support ticket. Ticket volume alone would have missed this entirely.",
+      next:"No ticket exists to route this to — flagged directly for the Dispatch PM, since support has no record to start from."
     },
     "Nightwell": {
       handler:"Marjorie Sung",
@@ -291,7 +358,8 @@ footer.note{
       ],
       verdict:"contradicted",
       verdictLabel:"Contradicted",
-      note:"The CSV shows the opposite story: she's getting 16–21 offers a week through this entire stretch, more than before the release, not fewer. Whatever \"nothing in 10 days\" refers to, it isn't offer volume in this data."
+      note:"The CSV shows the opposite story: she's getting 16–21 offers a week through this entire stretch, more than before the release, not fewer. Whatever \"nothing in 10 days\" refers to, it isn't offer volume in this data.",
+      next:"No action on her — flag the ticket itself for Nadia's team to check, since the complaint doesn't match anything in the data."
     },
     "Sgt. Falkirk": {
       handler:"Owen Bramwell",
@@ -305,7 +373,8 @@ footer.note{
       ],
       verdict:"partial",
       verdictLabel:"Partial — right problem, wrong description",
-      note:"The missed-offer complaint fits the shorter timeout, a real and universal change. But \"gone quiet\" doesn't match his numbers — offers are rising across the window, not falling, from 10 a week in June to 16 by late August."
+      note:"The missed-offer complaint fits the shorter timeout, a real and universal change. But \"gone quiet\" doesn't match his numbers — offers are rising across the window, not falling, from 10 a week in June to 16 by late August.",
+      next:"No action on him personally — the lost-offer pattern matches the universal 60s timeout. Logged as a known issue, not an individual case."
     },
     "Stormwrack": {
       handler:"Renata Kovač",
@@ -319,7 +388,8 @@ footer.note{
       ],
       verdict:"contradicted",
       verdictLabel:"Contradicted",
-      note:"His offers are climbing all through this window — 13 a week in June to 19 by late August, with offers taken climbing too. Nothing in the record looks \"quiet\" for him."
+      note:"His offers are climbing all through this window — 13 a week in June to 19 by late August, with offers taken climbing too. Nothing in the record looks \"quiet\" for him.",
+      next:"No action on him — flag the ticket itself for Nadia's team to check, since the complaint doesn't match anything in the data."
     },
     "The Drift": {
       handler:"Beatrice Calloway",
@@ -333,7 +403,8 @@ footer.note{
       ],
       verdict:"partial",
       verdictLabel:"Partial — right problem, wrong description",
-      note:"His weekly offers stay steady-to-slightly-up the whole time — not the near-total drought the ticket describes. The lost-offer complaint is plausible on its own (the shorter timeout), but the \"barely anything for three weeks\" framing isn't what the numbers show."
+      note:"His weekly offers stay steady-to-slightly-up the whole time — not the near-total drought the ticket describes. The lost-offer complaint is plausible on its own (the shorter timeout), but the \"barely anything for three weeks\" framing isn't what the numbers show.",
+      next:"Real lost-offer complaint, matches the timeout. \"Barely anything for weeks\" doesn't hold up — no further action needed on his trend."
     },
     "The Longcast": {
       handler:"Graham Petrov",
@@ -347,7 +418,8 @@ footer.note{
       ],
       verdict:"partial",
       verdictLabel:"Partial — right problem, wrong description",
-      note:"The missed-offer complaint lines up with the timeout cut. The \"on and off\" pattern is real week-to-week, but his overall trend is flat to slightly up, not a decline — he's not one of the responders actually losing offers."
+      note:"The missed-offer complaint lines up with the timeout cut. The \"on and off\" pattern is real week-to-week, but his overall trend is flat to slightly up, not a decline — he's not one of the responders actually losing offers.",
+      next:"No action on him personally — the lost-offer pattern matches the universal 60s timeout. Logged as a known issue, not an individual case."
     },
     "The Undertow": {
       handler:"Desmond Okafor",
@@ -363,7 +435,8 @@ footer.note{
       ],
       verdict:"confirmed",
       verdictLabel:"Confirmed",
-      note:"Matches the data closely. Offers collapse from 11–13 a week to 4, then 1, right after the release — one of the two worst cases in the roster, along with Farlight."
+      note:"Matches the data closely. Offers collapse from 11–13 a week to 4, then 1, right after the release — one of the two worst cases in the roster, along with Farlight.",
+      next:"Flagged for the Dispatch PM as a priority case — one of the two worst collapses in the roster."
     },
     "Vesper": {
       handler:"Aunt Dot",
@@ -372,7 +445,8 @@ footer.note{
       tickets:[],
       verdict:"silent",
       verdictLabel:"Silent but real",
-      note:"No ticket filed. Her data is just as bad as Farlight's or The Undertow's — offers fall from 12–15 a week to 5, then 2, then 1 — but none of it shows up in the ticket queue. Only surfaced because Aunt Dot mentioned it in an interview."
+      note:"No ticket filed. Her data is just as bad as Farlight's or The Undertow's — offers fall from 12–15 a week to 5, then 2, then 1 — but none of it shows up in the ticket queue. Only surfaced because Aunt Dot mentioned it in an interview.",
+      next:"No ticket exists to route this to — flagged directly for the Dispatch PM, since support has no record to start from."
     }
   };
 
@@ -380,6 +454,69 @@ footer.note{
     "Corporal Ashgrove","Halfmoon","Cindermark","The Drift","The Longcast","Sgt. Falkirk","Captain Vantage"];
 
   var dotColor = {confirmed:"var(--good)", contradicted:"var(--below)", partial:"var(--warn)", silent:"var(--below)"};
+
+  function declinePct(taken){
+    var pre = taken.slice(0,6), post = taken.slice(7,10);
+    var preAvg = pre.reduce(function(a,b){return a+b;},0) / pre.length;
+    var postAvg = post.reduce(function(a,b){return a+b;},0) / post.length;
+    if (preAvg === 0) return 0;
+    return (preAvg - postAvg) / preAvg;
+  }
+
+  var resolved = {};
+  var resolvedCount = 0;
+
+  function chipHtml(r, tierClass){
+    var tag = r.hasTicket ? '<span class="has-ticket">Has a ticket</span>' : '<span class="no-ticket">No ticket filed</span>';
+    return '<div class="attention-chip '+tierClass+'">' +
+      '<button class="name-btn" data-name="'+escapeHtml(r.name)+'">' +
+      '<span class="pct">&minus;'+Math.round(r.pct*100)+'%</span>' +
+      '<span>'+escapeHtml(r.name)+'</span>' + tag +
+      '</button>' +
+      '<button class="handle-btn" data-handle="'+escapeHtml(r.name)+'">Mark handled</button>' +
+      '</div>';
+  }
+
+  function renderAttention(){
+    var flagged = order.map(function(name){
+      return { name:name, pct:declinePct(D[name].taken), hasTicket:D[name].tickets.length > 0 };
+    }).filter(function(r){ return r.pct >= 0.25 && !resolved[r.name]; })
+      .sort(function(a,b){ return b.pct - a.pct; });
+
+    var critical = flagged.filter(function(r){ return r.pct >= 0.5; });
+    var declining = flagged.filter(function(r){ return r.pct < 0.5; });
+
+    var grid = document.getElementById('attentionGrid');
+    var html = '';
+    if (critical.length === 0 && declining.length === 0){
+      html = '<span style="color:var(--fg-muted); font-size:13px;">Nobody currently crosses the 25% threshold'+(resolvedCount>0 ? ' — '+resolvedCount+' marked handled this session.' : '.')+'</span>';
+    } else {
+      if (critical.length){
+        html += '<div class="attention-tier"><p class="attention-tier-label critical">Critical &mdash; 50%+ drop</p>' +
+          '<div class="attention-grid">'+critical.map(function(r){ return chipHtml(r,'critical'); }).join('')+'</div></div>';
+      }
+      if (declining.length){
+        html += '<div class="attention-tier"><p class="attention-tier-label declining">Declining &mdash; 25&ndash;49% drop</p>' +
+          '<div class="attention-grid">'+declining.map(function(r){ return chipHtml(r,'declining'); }).join('')+'</div></div>';
+      }
+      if (resolvedCount > 0){
+        html += '<div class="attention-resolved-note">'+resolvedCount+' marked handled this session &mdash; they stay off this list unless the decline gets worse again.</div>';
+      }
+    }
+    grid.innerHTML = html;
+
+    Array.prototype.forEach.call(grid.querySelectorAll('.name-btn'), function(btn){
+      btn.addEventListener('click', function(){ select(btn.dataset.name); window.scrollTo({top:0, behavior:'smooth'}); });
+    });
+    Array.prototype.forEach.call(grid.querySelectorAll('.handle-btn'), function(btn){
+      btn.addEventListener('click', function(e){
+        e.stopPropagation();
+        resolved[btn.dataset.handle] = true;
+        resolvedCount++;
+        renderAttention();
+      });
+    });
+  }
 
   var roster = document.getElementById('roster');
   order.forEach(function(name){
@@ -474,9 +611,12 @@ footer.note{
         '<div class="numrow" style="color:var(--fg)">'+numrowTaken+'</div>' +
       '</div>' +
       '<p class="section-label">Reconciliation</p>' +
-      '<div class="verdict-note">'+d.note+'</div>';
+      '<div class="verdict-note">'+d.note+'</div>' +
+      '<p class="section-label" style="margin-top:16px;">Next step</p>' +
+      '<div class="next-note"><b>&rarr;</b> '+d.next+'</div>';
   }
 
+  renderAttention();
   select(order[0]);
 })();
 </script>

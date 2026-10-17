@@ -108,9 +108,9 @@
 
   .bar { display: flex; height: 28px; border-radius: 6px; overflow: hidden; border: 1px solid var(--border); background: var(--panel-2); }
   .seg { height: 100%; transition: width 0.2s ease; min-width: 0; }
-  .seg.proximity { background: var(--accent); }
+  .seg.proximity { background: var(--accent); background-image: repeating-linear-gradient(135deg, transparent 0 5px, rgba(255,255,255,0.3) 5px 10px); }
   .seg.history { background: var(--warn); }
-  .seg.capability { background: var(--good); }
+  .seg.capability { background: var(--good); background-image: repeating-linear-gradient(135deg, transparent 0 5px, rgba(255,255,255,0.3) 5px 10px); }
 
   .legend { display: flex; flex-direction: column; gap: 9px; }
   .legend-item { display: grid; grid-template-columns: 14px 1fr auto; align-items: center; gap: 10px; min-width: 0; }
@@ -118,7 +118,7 @@
   .swatch.proximity { background: var(--accent); }
   .swatch.history { background: var(--warn); }
   .swatch.capability { background: var(--good); }
-  .legend-name { font-size: 13px; font-weight: 600; min-width: 0; }
+  .legend-name { font-size: 13px; font-weight: 600; min-width: 0; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
   .legend-sub { font-size: 12px; color: var(--fg-muted); }
   .legend-num { font-family: var(--font-mono); font-size: 13px; font-weight: 600; white-space: nowrap; }
 
@@ -128,6 +128,23 @@
   .explain.good { background: var(--good-bg); color: var(--good); }
   .explain.warn { background: var(--warn-bg); color: var(--warn); }
   .explain.below { background: var(--below-bg); color: var(--below); }
+
+  .meta-note {
+    font-size: 12.5px; color: var(--fg-muted); line-height: 1.5; margin: -4px 0 0;
+    border-left: 3px solid var(--border); padding-left: 10px;
+  }
+
+  .cta {
+    border: 1.5px solid var(--accent); background: var(--good-bg); border-radius: 9px;
+    padding: 13px 15px; font-size: 13.5px; line-height: 1.6; color: var(--fg);
+  }
+  .cta b { color: var(--accent); }
+  .cta .links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  .cta a {
+    font-family: var(--font-mono); font-size: 12px; font-weight: 600;
+    color: var(--accent-fg); background: var(--accent); text-decoration: none;
+    padding: 6px 10px; border-radius: 6px;
+  }
 
   .footnote {
     font-size: 12px; color: var(--fg-muted); line-height: 1.6; border-top: 1px solid var(--border);
@@ -147,6 +164,7 @@
     <div class="eyebrow">Rook Dispatch · Handler Console</div>
     <h1>Why wasn't I offered?</h1>
     <p class="sub">Pick a responder to see the real math behind their last ranking — how much proximity, recent acceptance, and capability match counted, and what's pulling their score up or down.</p>
+    <p class="meta-note">This is a snapshot, not a verdict — it moves every week as real callouts happen. Visible to this responder's own handler and the Dispatch PM, for understanding a ranking — not shared publicly, not open to any handler, and not stored as a permanent mark against anyone.</p>
   </div>
 
   <div class="panel">
@@ -205,7 +223,7 @@
       <div class="legend-item">
         <div class="swatch proximity"></div>
         <div>
-          <div class="legend-name">Proximity</div>
+          <div class="legend-name">Proximity <span class="tag assumed">ASSUMED</span></div>
           <div class="legend-sub" id="proximitySub">—</div>
         </div>
         <div class="legend-num" id="proximityNum">—</div>
@@ -213,7 +231,7 @@
       <div class="legend-item">
         <div class="swatch history"></div>
         <div>
-          <div class="legend-name">Recent acceptance</div>
+          <div class="legend-name">Recent acceptance <span class="tag real">REAL</span></div>
           <div class="legend-sub" id="historySub">—</div>
         </div>
         <div class="legend-num" id="historyNum">—</div>
@@ -221,7 +239,7 @@
       <div class="legend-item">
         <div class="swatch capability"></div>
         <div>
-          <div class="legend-name">Capability match</div>
+          <div class="legend-name">Capability match <span class="tag assumed">ASSUMED</span></div>
           <div class="legend-sub" id="capabilitySub">—</div>
         </div>
         <div class="legend-num" id="capabilityNum">—</div>
@@ -229,6 +247,14 @@
     </div>
 
     <div class="explain" id="explainBox">—</div>
+    <div class="cta" id="ctaBox" hidden>
+      <b>This is exactly the trap we built fixes for.</b> Second Chance guarantees a real offer once someone's gone quiet, regardless of why. If someone needs help today, not after a build cycle, the override tool can send one by hand right now.
+      <br><br><i>These open as separate tools — this page doesn't hand your specific case off to them automatically. You'd still pick this responder again once there.</i>
+      <div class="links">
+        <a href="https://claude.ai/artifact/1XuY1FLShxXGELqbqpwkZj" target="_blank" rel="noopener">See Second Chance</a>
+        <a href="https://claude.ai/artifact/SMnvvpYouxd5CxapAFHAyB" target="_blank" rel="noopener">Send a guaranteed offer now</a>
+      </div>
+    </div>
   </div>
 
   <div class="footnote">
@@ -305,7 +331,8 @@
     historyNum: document.getElementById("historyNum"),
     capabilitySub: document.getElementById("capabilitySub"),
     capabilityNum: document.getElementById("capabilityNum"),
-    explainBox: document.getElementById("explainBox")
+    explainBox: document.getElementById("explainBox"),
+    ctaBox: document.getElementById("ctaBox")
   };
 
   // populate dropdown, sorted alphabetically
@@ -394,11 +421,11 @@
     } else if (weakest.raw <= 0.15) {
       tone = "below";
       if (weakest.key === "history") {
-        headline = "The recent-acceptance score is what's sinking this: " + fmt(historyScore) + " out of 1.00, and it only recovers by them accepting more offers — which is hard if they're not being offered much.";
+        headline = "The recent-acceptance score is what's sinking this: " + fmt(historyScore) + " out of 1.00, and it only recovers by them accepting more offers — which is hard if they're not being offered much. This part is real, computed from actual callouts.";
       } else if (weakest.key === "proximity") {
-        headline = "Distance is what's sinking this: " + state.distance + " minutes away is near or past the 45-minute cutoff, so proximity is contributing little or nothing.";
+        headline = "If the distance guess is right, that's what's sinking this: " + state.distance + " minutes away is near or past the 45-minute cutoff, so proximity would contribute little or nothing. But that number is assumed, not measured — worth confirming before treating it as the answer.";
       } else {
-        headline = "The capability mismatch is what's sinking this: this job needs a tag they don't have, so that 0.15 of the score is gone.";
+        headline = "If the capability guess is right, that's what's sinking this: this job would need a tag they don't have, so that 0.15 of the score is gone. But that's assumed, not measured — worth confirming before treating it as the answer.";
       }
     } else {
       tone = "warn";
@@ -406,6 +433,7 @@
     }
     els.explainBox.className = "explain " + tone;
     els.explainBox.textContent = headline;
+    els.ctaBox.hidden = tone !== "below";
   }
 
   els.select.addEventListener("change", function () {
