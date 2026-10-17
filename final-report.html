@@ -193,10 +193,6 @@
     color: var(--text); font-style: italic;
   }
 
-  iframe.prototype-frame{
-    width: 100%; height: 560px; border: 4px solid var(--cyan); background:#fff;
-    box-shadow: 6px 6px 0 #000;
-  }
   .frame-caption{ text-align:center; font-size: 14px; color: var(--dim); margin-top: 8px; }
 
   .nav-pips{
@@ -220,7 +216,6 @@
 
   @media (max-width: 560px){
     .panel{ padding: 16px; }
-    iframe.prototype-frame{ height: 420px; }
   }
 </style>
 </head>
@@ -434,9 +429,12 @@
       trigger the same guarantee by hand, today, for the four responders who need it most.
       Built on real data from this repo, refined through two rounds of in-character feedback
       from the responders it's meant to help. Try it below:</p>
-    <iframe class="prototype-frame" src="05-super-speed/guaranteed-offer-override.html"
-      title="Guaranteed Offer Override prototype" loading="lazy"></iframe>
-    <div class="frame-caption">Live prototype — <code>05-super-speed/guaranteed-offer-override.html</code></div>
+    <div style="text-align:center; padding: 20px 0;">
+      <a class="press-start" href="05-super-speed/guaranteed-offer-override.html" target="_blank" rel="noopener">▶ LAUNCH PROTOTYPE</a>
+    </div>
+    <div class="frame-caption">Opens in a new tab — <code>05-super-speed/guaranteed-offer-override.html</code>.
+      Browsers won't let a local file embed another local file inline, so this opens it directly
+      instead of showing it in a box here.</div>
   </div>
 
   <div class="panel">
