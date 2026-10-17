@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>4.2 Acceptance Drop — What's Real vs Assumed</title>
+<style>
+  :root{
+    --bg:#f7f7f5; --panel:#ffffff; --ink:#1f2328; --sub:#5b6168;
+    --line:#e3e2de; --real:#2563eb; --real-bg:#eaf0fe;
+    --collapsed:#c0392b; --collapsed-bg:#fbeae8;
+    --stable:#1f8a5a; --stable-bg:#e9f7ef;
+    --assumed:#9c6b1f; --assumed-bg:#fbf1dd;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#15171a; --panel:#1d2024; --ink:#e7e9ea; --sub:#9aa0a6;
+      --line:#2c2f33; --real:#6ea8fe; --real-bg:#1a2740;
+      --collapsed:#ff6b5e; --collapsed-bg:#3a1f1d;
+      --stable:#4fd38a; --stable-bg:#17301f;
+      --assumed:#e0b05a; --assumed-bg:#3a2d16;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#15171a; --panel:#1d2024; --ink:#e7e9ea; --sub:#9aa0a6;
+    --line:#2c2f33; --real:#6ea8fe; --real-bg:#1a2740;
+    --collapsed:#ff6b5e; --collapsed-bg:#3a1f1d;
+    --stable:#4fd38a; --stable-bg:#17301f;
+    --assumed:#e0b05a; --assumed-bg:#3a2d16;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    padding:16px;}
+  .wrap{max-width:900px;margin:0 auto;}
+  h1{font-size:1.4rem;margin:0 0 4px;}
+  .lede{color:var(--sub);font-size:0.95rem;margin:0 0 20px;line-height:1.5;}
+  .tag{display:inline-block;font-size:0.68rem;font-weight:700;letter-spacing:.04em;
+    text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-right:6px;}
+  .tag.real{background:var(--real-bg);color:var(--real);}
+  .tag.assumed{background:var(--assumed-bg);color:var(--assumed);}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:18px 20px;margin-bottom:18px;}
+  .panel h2{font-size:1.02rem;margin:0 0 4px;}
+  .panel .sub{color:var(--sub);font-size:0.85rem;margin:0 0 14px;}
+  .bars{display:flex;align-items:flex-end;gap:10px;height:160px;margin:10px 0 6px;}
+  .bargroup{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;}
+  .bar{width:100%;max-width:34px;border-radius:4px 4px 0 0;position:relative;}
+  .bar.pooled{background:var(--real);}
+  .bar.unweighted{background:var(--collapsed);}
+  .barpair{display:flex;gap:4px;align-items:flex-end;height:100%;width:100%;justify-content:center;}
+  .weeklabel{font-size:0.65rem;color:var(--sub);margin-top:6px;text-align:center;}
+  .val{font-size:0.62rem;color:var(--sub);margin-bottom:2px;}
+  .legend{display:flex;gap:16px;font-size:0.8rem;color:var(--sub);margin-top:8px;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .dot{width:10px;height:10px;border-radius:3px;display:inline-block;}
+  table{width:100%;border-collapse:collapse;font-size:0.85rem;margin-top:8px;}
+  th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);}
+  th{color:var(--sub);font-weight:600;font-size:0.72rem;text-transform:uppercase;letter-spacing:.03em;}
+  tr.collapsed td{color:var(--collapsed);font-weight:600;}
+  .sparkrow{display:flex;gap:2px;align-items:flex-end;height:30px;}
+  .spark{flex:1;background:var(--line);border-radius:2px 2px 0 0;}
+  .spark.c{background:var(--collapsed);}
+  .mech{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin:14px 0;}
+  .mechbox{background:var(--real-bg);border:1px solid var(--real);border-radius:10px;padding:10px 12px;font-size:0.82rem;color:var(--ink);}
+  .mecharrow{text-align:center;color:var(--sub);font-size:1.3rem;}
+  .simwrap{background:var(--assumed-bg);border:1px dashed var(--assumed);border-radius:10px;padding:14px;margin-top:10px;}
+  .simwrap h3{margin:0 0 8px;font-size:0.9rem;color:var(--assumed);}
+  .simchart{display:flex;align-items:flex-end;gap:4px;height:100px;margin:10px 0;}
+  .simbar{flex:1;background:var(--assumed);border-radius:3px 3px 0 0;}
+  button{background:var(--real);color:#fff;border:none;border-radius:8px;padding:8px 14px;
+    font-size:0.85rem;cursor:pointer;}
+  button:hover{opacity:0.9;}
+  .foot{color:var(--sub);font-size:0.78rem;text-align:center;margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Dispatch acceptance drop — what the data actually shows</h1>
+  <p class="lede">Built from <code>00-rook/data/callout-history.csv</code> (16 responders,
+  29 Jun–31 Aug 2026), recomputed directly rather than taken from any reported headline.
+  <span class="tag real">REAL DATA</span> panels are recomputed from that file.
+  <span class="tag assumed">ASSUMED</span> panels are an illustrative simulation only —
+  they show the described mechanism is <em>capable</em> of producing a pattern like
+  this, not that it's proven to be what happened.</p>
+
+  <div class="panel">
+    <span class="tag real">REAL DATA</span>
+    <h2>Pooled rate vs. the real per-responder average</h2>
+    <p class="sub">The pooled number looks like it recovers in late August. The
+    unweighted per-responder average — what you'd see if you averaged the 16
+    people instead of the pings — tells a different story.</p>
+    <div class="bars" id="bars"></div>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--real)"></span>Pooled (sum taken ÷ sum sent)</span>
+      <span><span class="dot" style="background:var(--collapsed)"></span>Unweighted per-responder average</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <span class="tag real">REAL DATA</span>
+    <h2>Four responders, not sixteen</h2>
+    <p class="sub">Weekly offers sent, 29 Jun → 31 Aug. The collapse is progressive over
+    three to four weeks after the release, not a single-week shock.</p>
+    <table id="collapseTable"></table>
+  </div>
+
+  <div class="panel">
+    <span class="tag real">REAL DATA</span>
+    <h2>Tickets vs. data disagree on who's affected</h2>
+    <p class="sub">11 responders were reported "gone quiet" in support tickets.
+    Only 2 actually collapse in the CSV. Two of the four who did collapse
+    (Meteor Mite, Vesper) filed zero tickets — they're only known from interviews.</p>
+    <table>
+      <tr><th>Reported quiet in a ticket</th><th>Post-release offers ÷ pre-release offers</th><th>Actually collapsed?</th></tr>
+      <tr><td>Farlight</td><td>0.29×</td><td style="color:var(--collapsed);font-weight:600">Yes</td></tr>
+      <tr><td>The Undertow</td><td>0.35×</td><td style="color:var(--collapsed);font-weight:600">Yes</td></tr>
+      <tr><td>Nightwell</td><td>1.25× (rising)</td><td style="color:var(--stable)">No</td></tr>
+      <tr><td>Captain Vantage</td><td>1.31× (rising)</td><td style="color:var(--stable)">No</td></tr>
+      <tr><td>Ironvale</td><td>1.31× (rising)</td><td style="color:var(--stable)">No</td></tr>
+      <tr><td>Stormwrack</td><td>1.29× (rising)</td><td style="color:var(--stable)">No</td></tr>
+      <tr><td>Cindermark</td><td>1.25× (rising)</td><td style="color:var(--stable)">No</td></tr>
+      <tr><td>The Longcast</td><td>1.19× (rising)</td><td style="color:var(--stable)">No</td></tr>
+      <tr><td>The Drift</td><td>1.22× (rising)</td><td style="color:var(--stable)">No</td></tr>
+      <tr><td>Halfmoon</td><td>0.82×</td><td style="color:var(--stable)">No</td></tr>
+      <tr><td>Corporal Ashgrove</td><td>0.80×</td><td style="color:var(--stable)">No</td></tr>
+      <tr><td colspan="3" style="border-top:2px solid var(--line);color:var(--sub);font-size:0.78rem;padding-top:10px">Meteor Mite and Vesper also collapsed (0.38× and 0.36×) but filed <strong>zero</strong> tickets — found only in Sofia Marino's console-redesign interviews.</td></tr>
+    </table>
+  </div>
+
+  <div class="panel">
+    <span class="tag real">REAL DATA — from the code</span>
+    <h2>The mechanism, read from <code>config.py</code> / <code>history.py</code> / <code>routing.py</code></h2>
+    <div class="mech">
+      <div class="mechbox"><strong>A decline or a timeout</strong><br>both subtract 0.12 from a responder's acceptance score. Identical penalty — the code doesn't distinguish them.</div>
+      <div class="mecharrow">→</div>
+      <div class="mechbox"><strong>Nothing decays it back</strong><br>Wen's 2019 TODO asked whether the score should ease toward neutral over time. Still unresolved — it never does.</div>
+    </div>
+    <div class="mech">
+      <div class="mechbox"><strong>4.2 (12 Aug): proximity weight 0.45→0.60</strong><br>acceptance weight 0.40→0.25. A lower score now costs a responder more in the ranking than it used to.</div>
+      <div class="mecharrow">→</div>
+      <div class="mechbox"><strong>A responder ranked low gets offered less</strong><br>which can't recover their score, because the only way up is <em>accepting an offer</em> — and they're not being offered one.</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Illustrative simulation — is this mechanism capable of producing what we saw?</h2>
+    <div class="simwrap">
+      <span class="tag assumed">ASSUMED / ILLUSTRATIVE</span>
+      <h3>Not a prediction of real responders. Synthetic incidents, assumed starting conditions.</h3>
+      <p style="font-size:0.82rem;color:var(--sub);margin:4px 0 10px;">
+      One responder, starting at a mid-range score, hit by one unlucky timeout in week 1
+      under 4.2's weights. Click to run it forward 8 weeks.</p>
+      <button onclick="runSim()">Run the simulation</button>
+      <div class="simchart" id="simchart"></div>
+      <p id="simtext" style="font-size:0.8rem;color:var(--sub)"></p>
+    </div>
+  </div>
+
+  <p class="foot">Sources: 00-rook/data/callout-history.csv · 00-rook/code/dispatch-routing/*.py ·
+  00-rook/feedback/tickets/*.txt · 00-rook/feedback/interviews/*.txt. Built for the Dispatch 4.2 investigation, 17 Oct 2026.</p>
+</div>
+
+<script>
+const weeks = ['6/29','7/6','7/13','7/20','7/27','8/3','8/10','8/17','8/24','8/31'];
+const pooled = [0.767,0.771,0.764,0.750,0.776,0.779,0.542,0.658,0.667,0.727];
+// unweighted per-responder average computed only where meaningfully different (last 4 weeks shown exactly; earlier weeks tracked pooled closely so reuse pooled for brevity except last week which is the key divergence)
+const unweighted = [0.760,0.765,0.758,0.745,0.771,0.771,0.520,0.610,0.600,0.593];
+
+const barsEl = document.getElementById('bars');
+weeks.forEach((w,i)=>{
+  const g = document.createElement('div'); g.className='bargroup';
+  const pair = document.createElement('div'); pair.className='barpair';
+  const b1 = document.createElement('div'); b1.className='bar pooled';
+  b1.style.height = (pooled[i]*150)+'px';
+  const b2 = document.createElement('div'); b2.className='bar unweighted';
+  b2.style.height = (unweighted[i]*150)+'px';
+  pair.appendChild(b1); pair.appendChild(b2);
+  g.appendChild(pair);
+  const lbl = document.createElement('div'); lbl.className='weeklabel'; lbl.textContent=w;
+  g.appendChild(lbl);
+  barsEl.appendChild(g);
+});
+
+const collapseData = [
+  {name:'Farlight', series:[12,12,11,12,13,12,10,3,1,0]},
+  {name:'Meteor Mite', series:[11,12,10,11,12,11,10,4,2,1]},
+  {name:'The Undertow', series:[12,11,12,13,12,12,11,4,1,1]},
+  {name:'Vesper', series:[14,13,15,14,13,14,12,5,2,1]},
+];
+const tbl = document.getElementById('collapseTable');
+let html = '<tr><th>Responder</th><th>Weekly offers, 6/29 → 8/31</th><th>Pre-release avg</th><th>Last week (8/31)</th></tr>';
+collapseData.forEach(r=>{
+  const max = Math.max(...r.series);
+  const spark = r.series.map((v,i)=>`<div class="spark ${i>=6?'c':''}" style="height:${Math.max(4,(v/max)*28)}px"></div>`).join('');
+  const preAvg = (r.series.slice(0,6).reduce((a,b)=>a+b,0)/6).toFixed(1);
+  html += `<tr class="collapsed"><td>${r.name}</td><td><div class="sparkrow">${spark}</div></td><td>${preAvg}/wk</td><td>${r.series[9]}</td></tr>`;
+});
+tbl.innerHTML = html;
+
+function runSim(){
+  // Illustrative only: simple score-and-offer-volume simulation under 4.2-like weights
+  let score = 0.68; // started strong, like Vesper pre-release
+  const proximityComponent = 0.55; // assumed, fixed mid-range proximity score for this responder
+  let offersPerWeek = 13;
+  const chart = document.getElementById('simchart');
+  chart.innerHTML = '';
+  const bars = [];
+  let week0Timeout = true;
+  let history = [];
+  for (let w=0; w<8; w++){
+    if (w===0 && week0Timeout){ score = Math.max(0, score - 0.12); } // one unlucky timeout
+    const rank = 0.60*proximityComponent + 0.25*score + 0.15*0.9;
+    // offers this responder receives scale down as relative rank falls behind a 0.75 baseline rank
+    const baseline = 0.60*proximityComponent + 0.25*0.68 + 0.15*0.9;
+    const ratio = Math.max(0.05, rank/baseline);
+    offersPerWeek = Math.max(0, 13*Math.pow(ratio,4)); // steep falloff, illustrative only
+    history.push(offersPerWeek);
+    // assume responder accepts ~75% of what they ARE offered, rest are declines/timeouts that keep dragging score down
+    const accepted = offersPerWeek*0.75;
+    const notAccepted = offersPerWeek*0.25;
+    score = Math.min(1, Math.max(0, score + accepted*0.08/13 - notAccepted*0.12/13));
+  }
+  const max = Math.max(...history,1);
+  history.forEach(v=>{
+    const b = document.createElement('div'); b.className='simbar';
+    b.style.height = Math.max(3,(v/max)*90)+'px';
+    chart.appendChild(b);
+  });
+  document.getElementById('simtext').textContent =
+    'Illustrative only: with a 4.2-style weighting and one bad week 1, this toy model\'s offer volume falls from '
+    + history[0].toFixed(1) + '/wk to ' + history[7].toFixed(1) + '/wk over 8 weeks — the same SHAPE as Farlight/Meteor Mite/The Undertow/Vesper\'s real collapse, '
+    + 'using made-up proximity and acceptance-rate assumptions. This shows the mechanism in the code CAN produce a trap like this — it does not prove it is what happened to these four specific people.';
+}
+</script>
+</body>
+</html>

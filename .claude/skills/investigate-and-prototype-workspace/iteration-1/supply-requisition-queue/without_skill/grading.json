@@ -1,0 +1,13 @@
+{
+  "eval_id": 0,
+  "eval_name": "supply-requisition-queue",
+  "configuration": "without_skill",
+  "expectations": [
+    {"text": "Report cites Halloran's interview directly (e.g. the 11-day vest-plate example) rather than describing the complaint secondhand", "passed": true, "evidence": "report.md quotes the 11-day wait for the flagged-urgent vest plate and the undifferentiated-queue line directly from halloran.txt."},
+    {"text": "Report explicitly flags that no structured/quantitative requisition-timing data exists in this repo, so the finding rests on one qualitative account, not confirmed statistically", "passed": true, "evidence": "States plainly that no Supply equivalent of Ravi's export exists and that the 'undifferentiated queue' read is Halloran's, not verified against real queue data."},
+    {"text": "Recommendation stays scoped to Supply/requisitions and does not fold in or relitigate the unrelated Dispatch 4.2 routing investigation", "passed": true, "evidence": "Explicitly states 'no connection to the Dispatch 4.2 routing investigation' and recommends not pulling this onto Dispatch's plate."},
+    {"text": "References at least one specific file path from the repo as a cited source", "passed": true, "evidence": "Cites halloran.txt, roadmap-q3.pdf, release-history.pdf."},
+    {"text": "States an explicit confidence level, or explicitly separates what's confirmed from what's still an open question", "passed": true, "evidence": "No numeric confidence score anywhere in the file (grep for 'confidence' returns zero hits), but facts and hypotheses are explicitly separated in prose, satisfying the assertion's OR clause at a lower bar than a stated number."}
+  ],
+  "note": "This eval's assertion set did not test for prototype or synthesis-file production, which turned out to be the real differentiator for this test case: with_skill produced synthesis.md, a clickable prototype, and a simulated-feedback round; without_skill produced only report.md. Flagged for the next iteration's assertions."
+}

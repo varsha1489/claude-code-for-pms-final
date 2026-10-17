@@ -1,0 +1,12 @@
+{
+  "eval_id": 1,
+  "eval_name": "console-ux-stakeholder-brief",
+  "prompt": "Our director wants to know what's going on with the handler console complaints (readability, dark mode, alerts) — put together a brief and something I can show her.",
+  "assertions": [
+    "Output separates 'what the director asked for' from 'the proposed answer' as distinct, identifiable sections or files, not blended into one",
+    "Cites at least two of the four interview sources (Ambrose, Aunt Dot, Halloran, Kip) with a direct quote about console UX",
+    "Names dark mode as Kip's specific, repeatedly-raised ask, not a generic UX item",
+    "Explicitly distinguishes this console-UX work from the 4.2 routing root-cause investigation, instead of conflating them as the same problem",
+    "Produces an actual prototype/mockup file (not just a text description of what one would look like)"
+  ]
+}

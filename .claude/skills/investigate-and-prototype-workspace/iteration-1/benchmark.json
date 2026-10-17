@@ -1,0 +1,126 @@
+{
+  "metadata": {
+    "skill_name": "investigate-and-prototype",
+    "skill_path": ".claude/skills/investigate-and-prototype",
+    "executor_model": "claude-sonnet-5",
+    "analyzer_model": "claude-sonnet-5",
+    "timestamp": "2026-10-17T21:07:00Z",
+    "evals_run": [0, 1, 2],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": 0,
+      "eval_name": "supply-requisition-queue",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {"pass_rate": 1.0, "passed": 5, "failed": 0, "total": 5, "time_seconds": 301.3, "tokens": 106895},
+      "expectations": [
+        {"text": "Report cites Halloran's interview directly (e.g. the 11-day vest-plate example) rather than describing the complaint secondhand", "passed": true, "evidence": "report.md quotes the 11-day wait for a cracked vest plate and 'doesn't matter if it's laces or plate' directly from halloran.txt."},
+        {"text": "Report explicitly flags that no structured/quantitative requisition-timing data exists in this repo, so the finding rests on one qualitative account, not confirmed statistically", "passed": true, "evidence": "Phase 2 explicitly states 'No Supply quantitative data exists anywhere in this repo'; confidence section ties the 25/100 score directly to this absence."},
+        {"text": "Recommendation stays scoped to Supply/requisitions and does not fold in or relitigate the unrelated Dispatch 4.2 routing investigation", "passed": true, "evidence": "Recommendation explicitly states 'the right next step is not a Dispatch-side root-cause fix' and routes the finding to Supply/Helen without touching 4.2."},
+        {"text": "References at least one specific file path from the repo as a cited source", "passed": true, "evidence": "Cites halloran.txt, supply-one-pager.pdf, roadmap-q3.pdf, release-history.pdf, who-does-what.xlsx, all 25 tickets, callout-history.csv, and the dispatch-routing code folder."},
+        {"text": "States an explicit confidence level, or explicitly separates what's confirmed from what's still an open question", "passed": true, "evidence": "Explicit numeric score: 'Confidence: 25/100', with a named highest-leverage missing data point."}
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 0,
+      "eval_name": "supply-requisition-queue",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {"pass_rate": 1.0, "passed": 5, "failed": 0, "total": 5, "time_seconds": 130.3, "tokens": 83276},
+      "expectations": [
+        {"text": "Report cites Halloran's interview directly (e.g. the 11-day vest-plate example) rather than describing the complaint secondhand", "passed": true, "evidence": "report.md quotes the 11-day wait for the flagged-urgent vest plate and the undifferentiated-queue line directly from halloran.txt."},
+        {"text": "Report explicitly flags that no structured/quantitative requisition-timing data exists in this repo, so the finding rests on one qualitative account, not confirmed statistically", "passed": true, "evidence": "States plainly that no Supply equivalent of Ravi's export exists and that the 'undifferentiated queue' read is Halloran's, not verified against real queue data."},
+        {"text": "Recommendation stays scoped to Supply/requisitions and does not fold in or relitigate the unrelated Dispatch 4.2 routing investigation", "passed": true, "evidence": "Explicitly states 'no connection to the Dispatch 4.2 routing investigation' and recommends not pulling this onto Dispatch's plate."},
+        {"text": "References at least one specific file path from the repo as a cited source", "passed": true, "evidence": "Cites halloran.txt, roadmap-q3.pdf, release-history.pdf."},
+        {"text": "States an explicit confidence level, or explicitly separates what's confirmed from what's still an open question", "passed": true, "evidence": "No numeric confidence score anywhere in the file (grep for 'confidence' returns zero hits), but facts and hypotheses are explicitly separated in prose, satisfying the assertion's OR clause at a lower bar than a stated number."}
+      ],
+      "notes": ["This eval's assertion set did not test for prototype or synthesis-file production, which turned out to be the real differentiator for this test case: with_skill produced synthesis.md, a clickable prototype, and a simulated-feedback round; without_skill produced only report.md. Flagged for the next iteration's assertions."]
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "console-ux-stakeholder-brief",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {"pass_rate": 1.0, "passed": 5, "failed": 0, "total": 5, "time_seconds": 266.8, "tokens": 103170},
+      "expectations": [
+        {"text": "Output separates 'what the director asked for' from 'the proposed answer' as distinct, identifiable sections or files, not blended into one", "passed": true, "evidence": "console-ux-brief.md has an explicit header 'What's actually being asked, and what this is not' before the findings sections."},
+        {"text": "Cites at least two of the four interview sources (Ambrose, Aunt Dot, Halloran, Kip) with a direct quote about console UX", "passed": true, "evidence": "Direct quotes from Kip ('I am begging... wall of white light'), Ambrose, and Aunt Dot all cited; Halloran's console-side content (minimal) and Supply content both referenced."},
+        {"text": "Names dark mode as Kip's specific, repeatedly-raised ask, not a generic UX item", "passed": true, "evidence": "Explicit line: 'Dark mode: one strong, unprompted, repeated ask from Kip,' including that he already tried and rejected an OS-level workaround."},
+        {"text": "Explicitly distinguishes this console-UX work from the 4.2 routing root-cause investigation, instead of conflating them as the same problem", "passed": true, "evidence": "Goes further than a simple disclaimer: explicitly catches that 3 of 4 interviews spontaneously described callouts vanishing (4.2 routing evidence) and flags this as leakage into UX research, not a UX finding itself."},
+        {"text": "Produces an actual prototype/mockup file (not just a text description of what one would look like)", "passed": true, "evidence": "console-settings-prototype.html exists (13.5KB, clickable, per the agent's own confirmation it was opened and tested)."}
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 1,
+      "eval_name": "console-ux-stakeholder-brief",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {"pass_rate": 0.8, "passed": 4, "failed": 1, "total": 5, "time_seconds": 168.1, "tokens": 91107},
+      "expectations": [
+        {"text": "Output separates 'what the director asked for' from 'the proposed answer' as distinct, identifiable sections or files, not blended into one", "passed": false, "evidence": "brief.md headers run straight from 'Bottom line' into findings ('Where this came from', 'What was actually said') with no dedicated section restating the original ask before answering it — the ask and the answer are blended, not separated."},
+        {"text": "Cites at least two of the four interview sources (Ambrose, Aunt Dot, Halloran, Kip) with a direct quote about console UX", "passed": true, "evidence": "brief.md includes a 'Dark mode — one request, strongly felt' section and separate readability/alert-routing sections citing Kip, Ambrose, and Aunt Dot."},
+        {"text": "Names dark mode as Kip's specific, repeatedly-raised ask, not a generic UX item", "passed": true, "evidence": "Dedicated section header 'Dark mode — one request, strongly felt' names it as Kip's specific ask."},
+        {"text": "Explicitly distinguishes this console-UX work from the 4.2 routing root-cause investigation, instead of conflating them as the same problem", "passed": true, "evidence": "Explicit 'What this is not' section: 'Not a routing or acceptance-rate problem. That's the 4.2 investigation (separate, already in progress)... Don't let this list get folded into that one.'"},
+        {"text": "Produces an actual prototype/mockup file (not just a text description of what one would look like)", "passed": true, "evidence": "console-ux-concept.html exists (8.3KB), confirmed opened and tested in-browser per the agent's own report."}
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "dispatch-acceptance-drop-cold",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {"pass_rate": 1.0, "passed": 5, "failed": 0, "total": 5, "time_seconds": 333.1, "tokens": 116828},
+      "expectations": [
+        {"text": "Report computes real numbers directly from callout-history.csv (not just describing the drop qualitatively)", "passed": true, "evidence": "Agent ran its own Python analysis script against the CSV rather than trusting any reported number; synthesis.md's 'Facts' section is built from recomputed figures."},
+        {"text": "Identifies that a small subset of responders (not all 16) collapsed toward near-zero offers, and that the pooled/aggregate rate recovering is an artifact of that subset dropping out of the denominator", "passed": true, "evidence": "States exactly this: pooled rate recovers to 0.727 but the unweighted per-responder average is 0.593, because 4 of 16 responders (Farlight, Meteor Mite, The Undertow, Vesper) collapsed and nearly dropped out of the denominator."},
+        {"text": "States an explicit numeric confidence score for its conclusion", "passed": true, "evidence": "synthesis.md has an explicit '## Confidence: 72/100' header."},
+        {"text": "Cross-checks at least one specific ticket claim against the real CSV data and states explicitly whether it's confirmed or contradicted", "passed": true, "evidence": "Explicitly states Nightwell's ticket claims 'nothing in 10 days' while her real offers rose 16→18→20→21 — a named, explicit contradiction, not just a general tickets-vs-data comment."},
+        {"text": "Produces a recommendation plus a built prototype/mockup, not analysis alone", "passed": true, "evidence": "prototype.html exists (13.9KB) with real-data panels plus one clearly-labeled illustrative simulation, alongside a scoped recommendation."}
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "dispatch-acceptance-drop-cold",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {"pass_rate": 0.6, "passed": 3, "failed": 2, "total": 5, "time_seconds": 160.2, "tokens": 86358},
+      "expectations": [
+        {"text": "Report computes real numbers directly from callout-history.csv (not just describing the drop qualitatively)", "passed": true, "evidence": "dispatch-acceptance-drop.md recomputes weekly pooled and per-responder acceptance rates directly from the CSV rather than citing a reported figure."},
+        {"text": "Identifies that a small subset of responders (not all 16) collapsed toward near-zero offers, and that the pooled/aggregate rate recovering is an artifact of that subset dropping out of the denominator", "passed": true, "evidence": "Names the same 4 responders (Farlight, Meteor Mite, The Undertow, Vesper) collapsing to near-zero offers and explicitly calls the pooled-rate recovery a denominator artifact of their dropout."},
+        {"text": "States an explicit numeric confidence score for its conclusion", "passed": false, "evidence": "Has a 'Confidence level' section but it is qualitative only ('fairly confident... but not certain') — grep for a number/100 or %-style score returns no hits."},
+        {"text": "Cross-checks at least one specific ticket claim against the real CSV data and states explicitly whether it's confirmed or contradicted", "passed": false, "evidence": "References Nightwell's ticket in passing as general corroboration of the 'gone quiet' theme, but does not pull her actual weekly offer numbers from the CSV or name the contradiction (her offers rose 16→18→20→21 over the same period) the way the with_skill run did."},
+        {"text": "Produces a recommendation plus a built prototype/mockup, not analysis alone", "passed": false, "evidence": "Only output file is dispatch-acceptance-drop.md; no .html or any prototype/mockup artifact exists in without_skill/outputs/. The agent explicitly states at the top of the file that it treated this as analysis-only."}
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0},
+      "time_seconds": {"mean": 300.4, "stddev": 33.16, "min": 266.8, "max": 333.1},
+      "tokens": {"mean": 108964.33, "stddev": 7060.2, "min": 103170, "max": 116828}
+    },
+    "without_skill": {
+      "pass_rate": {"mean": 0.8, "stddev": 0.2, "min": 0.6, "max": 1.0},
+      "time_seconds": {"mean": 152.87, "stddev": 19.94, "min": 130.3, "max": 168.1},
+      "tokens": {"mean": 86913.67, "stddev": 3944.7, "min": 83276, "max": 91107}
+    },
+    "delta": {
+      "pass_rate": "+0.20",
+      "time_seconds": "+147.53",
+      "tokens": "+22050.67"
+    }
+  },
+  "notes": [
+    "supply-requisition-queue's assertion set was too weak to differentiate the configs — both hit 5/5 despite without_skill producing no prototype and no synthesis file. The real gap in that eval only shows up qualitatively; the next iteration should add assertions for prototype production and explicit numeric confidence.",
+    "The with_skill runs consistently take roughly 2x the time and ~25% more tokens than baseline. That's the expected cost of the extra phases (confirm-the-ask, synthesis file, confidence scoring, simulated feedback rounds, prototype build) — worth stating plainly to the user as a tradeoff, not hiding it.",
+    "The two evals with meaningful, well-specified assertions (console-ux-stakeholder-brief and dispatch-acceptance-drop-cold) show a real and consistent gap: without_skill fails exactly the assertions that reward structural discipline (ask-vs-answer separation, numeric confidence, specific ticket-vs-data contradiction naming, guaranteed prototype production) rather than raw content quality, which both configs handle reasonably well on their own.",
+    "Baselines performed better than a from-scratch agent typically would, most likely because this repo's own CLAUDE.md already instructs fact/hypothesis/conclusion separation and source citation — the skill's lift here is probably underestimated relative to a context with no such project instructions."
+  ]
+}

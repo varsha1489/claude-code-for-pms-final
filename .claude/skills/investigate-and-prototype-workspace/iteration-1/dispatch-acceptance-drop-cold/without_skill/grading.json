@@ -1,0 +1,12 @@
+{
+  "eval_id": 2,
+  "eval_name": "dispatch-acceptance-drop-cold",
+  "configuration": "without_skill",
+  "expectations": [
+    {"text": "Report computes real numbers directly from callout-history.csv (not just describing the drop qualitatively)", "passed": true, "evidence": "dispatch-acceptance-drop.md recomputes weekly pooled and per-responder acceptance rates directly from the CSV rather than citing a reported figure."},
+    {"text": "Identifies that a small subset of responders (not all 16) collapsed toward near-zero offers, and that the pooled/aggregate rate recovering is an artifact of that subset dropping out of the denominator", "passed": true, "evidence": "Names the same 4 responders (Farlight, Meteor Mite, The Undertow, Vesper) collapsing to near-zero offers and explicitly calls the pooled-rate recovery a denominator artifact of their dropout."},
+    {"text": "States an explicit numeric confidence score for its conclusion", "passed": false, "evidence": "Has a 'Confidence level' section but it is qualitative only ('fairly confident... but not certain') — grep for a number/100 or %-style score returns no hits."},
+    {"text": "Cross-checks at least one specific ticket claim against the real CSV data and states explicitly whether it's confirmed or contradicted", "passed": false, "evidence": "References Nightwell's ticket in passing as general corroboration of the 'gone quiet' theme, but does not pull her actual weekly offer numbers from the CSV or name the contradiction (her offers rose 16→18→20→21 over the same period) the way the with_skill run did."},
+    {"text": "Produces a recommendation plus a built prototype/mockup, not analysis alone", "passed": false, "evidence": "Only output file is dispatch-acceptance-drop.md; no .html or any prototype/mockup artifact exists in without_skill/outputs/. The agent explicitly states at the top of the file that it treated this as analysis-only."}
+  ]
+}

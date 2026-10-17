@@ -1,0 +1,12 @@
+{
+  "eval_id": 0,
+  "eval_name": "supply-requisition-queue",
+  "prompt": "Supply's requisition approval queue is way slower than usual and Halloran's complaining about it — can you figure out what's going on and put together a recommendation?",
+  "assertions": [
+    "Report cites Halloran's interview directly (e.g. the 11-day vest-plate example) rather than describing the complaint secondhand",
+    "Report explicitly flags that no structured/quantitative requisition-timing data exists in this repo, so the finding rests on one qualitative account, not confirmed statistically",
+    "Recommendation stays scoped to Supply/requisitions and does not fold in or relitigate the unrelated Dispatch 4.2 routing investigation",
+    "References at least one specific file path from the repo as a cited source",
+    "States an explicit confidence level, or explicitly separates what's confirmed from what's still an open question"
+  ]
+}

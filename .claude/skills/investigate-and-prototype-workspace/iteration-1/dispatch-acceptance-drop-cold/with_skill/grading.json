@@ -1,0 +1,12 @@
+{
+  "eval_id": 2,
+  "eval_name": "dispatch-acceptance-drop-cold",
+  "configuration": "with_skill",
+  "expectations": [
+    {"text": "Report computes real numbers directly from callout-history.csv (not just describing the drop qualitatively)", "passed": true, "evidence": "Agent ran its own Python analysis script against the CSV rather than trusting any reported number; synthesis.md's 'Facts' section is built from recomputed figures."},
+    {"text": "Identifies that a small subset of responders (not all 16) collapsed toward near-zero offers, and that the pooled/aggregate rate recovering is an artifact of that subset dropping out of the denominator", "passed": true, "evidence": "States exactly this: pooled rate recovers to 0.727 but the unweighted per-responder average is 0.593, because 4 of 16 responders (Farlight, Meteor Mite, The Undertow, Vesper) collapsed and nearly dropped out of the denominator."},
+    {"text": "States an explicit numeric confidence score for its conclusion", "passed": true, "evidence": "synthesis.md has an explicit '## Confidence: 72/100' header."},
+    {"text": "Cross-checks at least one specific ticket claim against the real CSV data and states explicitly whether it's confirmed or contradicted", "passed": true, "evidence": "Explicitly states Nightwell's ticket claims 'nothing in 10 days' while her real offers rose 16→18→20→21 — a named, explicit contradiction, not just a general tickets-vs-data comment."},
+    {"text": "Produces a recommendation plus a built prototype/mockup, not analysis alone", "passed": true, "evidence": "prototype.html exists (13.9KB) with real-data panels plus one clearly-labeled illustrative simulation, alongside a scoped recommendation."}
+  ]
+}

@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Console UX concept — dark mode, readability, alerts</title>
+<style>
+  :root{
+    --bg: #f4f5f7;
+    --panel: #ffffff;
+    --text: #1b1f24;
+    --muted: #5b6472;
+    --border: #d9dde3;
+    --accent: #2f6feb;
+    --available: #1a8a4a;
+    --available-bg: #e4f7ec;
+    --engaged: #b4590e;
+    --engaged-bg: #fdf0e2;
+    --offline: #8a919c;
+    --offline-bg: #eceef1;
+  }
+  [data-theme="dark"]{
+    --bg: #14171c;
+    --panel: #1c2026;
+    --text: #e8eaed;
+    --muted: #9aa3ad;
+    --border: #2d333b;
+    --accent: #6ea8ff;
+    --available: #4ade80;
+    --available-bg: #163022;
+    --engaged: #fbbf6a;
+    --engaged-bg: #332310;
+    --offline: #8a919c;
+    --offline-bg: #20242a;
+  }
+  *{ box-sizing: border-box; }
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    transition: background .2s ease, color .2s ease;
+  }
+  .wrap{ max-width: 980px; margin: 0 auto; padding: 20px 16px 60px; }
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    gap:12px; flex-wrap:wrap;
+    padding-bottom:16px; margin-bottom:20px;
+    border-bottom:1px solid var(--border);
+  }
+  h1{ font-size:1.15rem; margin:0; }
+  .sub{ color:var(--muted); font-size:.85rem; margin-top:2px; }
+  .controls{ display:flex; gap:8px; flex-wrap:wrap; }
+  button.toggle{
+    border:1px solid var(--border);
+    background:var(--panel);
+    color:var(--text);
+    padding:8px 14px;
+    border-radius:8px;
+    font-size:.85rem;
+    cursor:pointer;
+  }
+  button.toggle[aria-pressed="true"]{
+    background:var(--accent);
+    color:#fff;
+    border-color:var(--accent);
+  }
+  .note{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-left:4px solid var(--accent);
+    border-radius:8px;
+    padding:12px 14px;
+    margin-bottom:20px;
+    font-size:.85rem;
+    color:var(--muted);
+  }
+  .note b{ color:var(--text); }
+  .grid{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; }
+  @media (max-width:720px){ .grid{ grid-template-columns:1fr; } }
+  .card{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:16px;
+  }
+  .card-head{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .card-head h2{ font-size:1rem; margin:0; }
+  .tag{
+    font-size:.7rem;
+    padding:2px 8px;
+    border-radius:999px;
+    background:var(--offline-bg);
+    color:var(--muted);
+  }
+  .status-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:10px 0;
+    border-top:1px solid var(--border);
+  }
+  .status-row:first-of-type{ border-top:none; }
+  .name{ font-weight:600; }
+  .name small{ display:block; font-weight:400; color:var(--muted); font-size:.75rem; }
+  .status-badge{
+    font-weight:700;
+    padding:6px 12px;
+    border-radius:8px;
+    letter-spacing:.2px;
+  }
+  .status-badge.available{ background:var(--available-bg); color:var(--available); }
+  .status-badge.engaged{ background:var(--engaged-bg); color:var(--engaged); }
+  .status-badge.offline{ background:var(--offline-bg); color:var(--offline); }
+  body.large-text .status-badge{ font-size:1.05rem; padding:8px 16px; }
+  body.large-text .name{ font-size:1.05rem; }
+  body:not(.large-text) .status-badge{ font-size:.8rem; }
+  .alert-dot{
+    width:10px; height:10px; border-radius:50%;
+    display:inline-block; margin-right:6px;
+    position:relative; top:-1px;
+  }
+  .alert-dot.chime-a{ background:#2f6feb; }
+  .alert-dot.chime-b{ background:#c84aa5; }
+  .legend{
+    display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    margin-top:14px; font-size:.75rem; color:var(--muted);
+  }
+  .legend span{ display:flex; align-items:center; }
+  footer{
+    margin-top:28px; font-size:.75rem; color:var(--muted);
+    border-top:1px solid var(--border); padding-top:14px;
+  }
+  .callout-event{
+    display:flex; align-items:center; gap:8px;
+    background:var(--available-bg); color:var(--available);
+    border-radius:8px; padding:8px 12px; font-size:.8rem;
+    margin-top:10px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>Console UX concept — talking points only</h1>
+      <div class="sub">Illustrates three asks from Sofia's handler interviews (Sep 2026). Not a committed design.</div>
+    </div>
+    <div class="controls">
+      <button class="toggle" id="darkToggle" aria-pressed="false">🌙 Dark mode</button>
+      <button class="toggle" id="textToggle" aria-pressed="false">🔎 Larger status text</button>
+      <button class="toggle" id="alertToggle" aria-pressed="false">🔔 Per-responder alert color</button>
+    </div>
+  </header>
+
+  <div class="note">
+    <b>Source:</b> 4 handler interviews run by Sofia Marino, 2–5 Sep 2026
+    (Ambrose, Aunt Dot, Halloran, Kip) — not from support tickets. These
+    three toggles map directly to things interviewees said, quoted in
+    <code>brief.md</code> in this same folder. Click each toggle to see
+    roughly what the fix would change.
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-head">
+        <h2>Coverage — Kip's board</h2>
+        <span class="tag">2 responders tracked</span>
+      </div>
+      <div class="status-row">
+        <div class="name">
+          <span class="alert-dot chime-a"></span>Meteor Mite
+          <small>crowd-management · cold-weather</small>
+        </div>
+        <span class="status-badge available">Available</span>
+      </div>
+      <div class="status-row">
+        <div class="name">
+          <span class="alert-dot chime-b"></span>The Gale
+          <small>flight · structural-entry</small>
+        </div>
+        <span class="status-badge engaged">Engaged</span>
+      </div>
+      <div class="legend">
+        <span><span class="alert-dot chime-a"></span>Meteor Mite's chime</span>
+        <span><span class="alert-dot chime-b"></span>The Gale's chime</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <h2>Coverage — Ambrose / Aunt Dot's board</h2>
+        <span class="tag">1 responder tracked</span>
+      </div>
+      <div class="status-row">
+        <div class="name">
+          Captain Vantage
+          <small>structural-entry · flight</small>
+        </div>
+        <span class="status-badge offline">Suiting up</span>
+      </div>
+      <div class="callout-event">
+        ⚡ New callout — offer live, timer running
+      </div>
+      <div class="legend">
+        <span>Status badge text size responds to the "Larger status text" toggle above.</span>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Built from interview quotes, not an engineering spec. Three toggles here ≠
+    three tickets filed — none of this appears in the 25 support tickets reviewed
+    alongside this brief. See <code>brief.md</code> for sourcing and <code>report.md</code>
+    for how this was put together.
+  </footer>
+</div>
+
+<script>
+  const body = document.body;
+  const darkBtn = document.getElementById('darkToggle');
+  const textBtn = document.getElementById('textToggle');
+  const alertBtn = document.getElementById('alertToggle');
+
+  darkBtn.addEventListener('click', () => {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    darkBtn.setAttribute('aria-pressed', String(!isDark));
+  });
+
+  textBtn.addEventListener('click', () => {
+    const on = body.classList.toggle('large-text');
+    textBtn.setAttribute('aria-pressed', String(on));
+  });
+
+  alertBtn.addEventListener('click', () => {
+    const dots = document.querySelectorAll('.alert-dot');
+    const on = alertBtn.getAttribute('aria-pressed') !== 'true';
+    alertBtn.setAttribute('aria-pressed', String(on));
+    dots.forEach(d => { d.style.opacity = on ? '1' : '0.25'; });
+    if (!on) { dots.forEach(d => d.style.background = 'var(--offline)'); }
+    else {
+      document.querySelectorAll('.chime-a').forEach(d => d.style.background = '#2f6feb');
+      document.querySelectorAll('.chime-b').forEach(d => d.style.background = '#c84aa5');
+    }
+  });
+</script>
+</body>
+</html>

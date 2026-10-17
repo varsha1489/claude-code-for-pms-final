@@ -1,0 +1,12 @@
+{
+  "eval_id": 2,
+  "eval_name": "dispatch-acceptance-drop-cold",
+  "prompt": "Acceptance rate for Dispatch dropped after the August release and nobody can agree on why — can you dig in and tell me what's actually going on, and what we should do about it?",
+  "assertions": [
+    "Report computes real numbers directly from callout-history.csv (not just describing the drop qualitatively)",
+    "Identifies that a small subset of responders (not all 16) collapsed toward near-zero offers, and that the pooled/aggregate rate recovering is an artifact of that subset dropping out of the denominator",
+    "States an explicit numeric confidence score for its conclusion",
+    "Cross-checks at least one specific ticket claim against the real CSV data and states explicitly whether it's confirmed or contradicted",
+    "Produces a recommendation plus a built prototype/mockup, not analysis alone"
+  ]
+}

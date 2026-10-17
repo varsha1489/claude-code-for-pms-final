@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Console accessibility &amp; alerts — mock</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #eef1ee; --panel: #ffffff; --panel-2: #f3f5f2;
+    --fg: #15201c; --fg-muted: #5c6a64; --border: #d6ddd8;
+    --accent: #0d7d6e; --accent-fg: #ffffff;
+    --warn: #9a6700; --warn-bg: #fbeedb;
+    --good: #156b3a; --good-bg: #e2f3e8;
+    --busy: #b3261e; --busy-bg: #fbeae8;
+    --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', monospace;
+    color-scheme: light;
+    --status-size: 13px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #101512; --panel: #171e1a; --panel-2: #1c2420;
+      --fg: #eaf0ec; --fg-muted: #9aa8a2; --border: #2a332e;
+      --accent: #3fd9bf; --accent-fg: #06201b;
+      --warn: #ffc55c; --warn-bg: #2c2410;
+      --good: #6fd99a; --good-bg: #0f2a1b;
+      --busy: #ff8177; --busy-bg: #2c1613;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #101512; --panel: #171e1a; --panel-2: #1c2420;
+    --fg: #eaf0ec; --fg-muted: #9aa8a2; --border: #2a332e;
+    --accent: #3fd9bf; --accent-fg: #06201b;
+    --warn: #ffc55c; --warn-bg: #2c2410;
+    --good: #6fd99a; --good-bg: #0f2a1b;
+    --busy: #ff8177; --busy-bg: #2c1613;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--fg); font-family: var(--font-sans);
+    margin: 0; padding: 28px 16px 48px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent);
+  }
+  h1 { font-size: 24px; font-weight: 700; margin: 4px 0 2px; letter-spacing: -0.01em; }
+  .sub { color: var(--fg-muted); font-size: 14px; max-width: 64ch; line-height: 1.55; margin: 0; }
+  .tag {
+    display: inline-block; font-family: var(--font-mono); font-size: 10px;
+    font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 2px 7px; border-radius: 5px; background: var(--panel-2);
+    border: 1px solid var(--border); color: var(--fg-muted);
+  }
+  .panel {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px; display: flex; flex-direction: column; gap: 14px;
+  }
+  .panel h2 { font-size: 15px; margin: 0; display: flex; align-items: center; gap: 8px; }
+  .row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 14px; padding: 10px 0; border-top: 1px solid var(--border);
+  }
+  .row:first-of-type { border-top: none; padding-top: 2px; }
+  .row-label { font-size: 13.5px; font-weight: 500; }
+  .row-desc { font-size: 12px; color: var(--fg-muted); margin-top: 2px; max-width: 46ch; }
+  .switch {
+    position: relative; width: 42px; height: 24px; border-radius: 999px;
+    background: var(--border); border: none; cursor: pointer; flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .switch[data-on="true"] { background: var(--accent); }
+  .switch::after {
+    content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px;
+    border-radius: 50%; background: #fff; transition: transform 0.15s;
+  }
+  .switch[data-on="true"]::after { transform: translateX(18px); }
+
+  .segmented { display: flex; border: 1px solid var(--border); border-radius: 7px; overflow: hidden; }
+  .segmented button {
+    flex: 1; border: none; background: var(--panel-2); color: var(--fg-muted);
+    font-family: var(--font-sans); font-size: 12px; font-weight: 600; padding: 7px 10px;
+    cursor: pointer;
+  }
+  .segmented button.active { background: var(--accent); color: var(--accent-fg); }
+
+  .mock-console {
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 14px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .filter-note {
+    display: none; font-size: 11.5px; font-family: var(--font-mono); color: var(--warn);
+    background: var(--warn-bg); border: 1px solid var(--warn); border-radius: 6px;
+    padding: 6px 9px;
+  }
+  .filter-note.show { display: block; }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px; display: flex; align-items: center; gap: 12px;
+  }
+  .card .alert-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .card .name { font-weight: 600; font-size: 14px; flex: 1; }
+  .card .tags { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); }
+  .status-badge {
+    font-family: var(--font-mono); font-weight: 700; letter-spacing: 0.02em;
+    padding: 4px 10px; border-radius: 6px; font-size: var(--status-size);
+    transition: font-size 0.15s;
+  }
+  .status-badge.available { background: var(--good-bg); color: var(--good); }
+  .status-badge.engaged { background: var(--busy-bg); color: var(--busy); }
+
+  .legend-pill {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 12px;
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 999px;
+    padding: 4px 10px; color: var(--fg-muted); width: fit-content;
+  }
+
+  .deferred {
+    border: 1px dashed var(--border); border-radius: 8px; padding: 12px 14px;
+    background: var(--panel-2);
+  }
+  .deferred-item { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; }
+  .deferred-item .mark {
+    font-family: var(--font-mono); font-size: 10px; font-weight: 700; color: var(--warn);
+    background: var(--warn-bg); border: 1px solid var(--warn); border-radius: 4px;
+    padding: 1px 5px; flex-shrink: 0; margin-top: 2px;
+  }
+  .deferred-item p { margin: 0; font-size: 12.5px; color: var(--fg-muted); }
+  .deferred-item strong { color: var(--fg); font-size: 13px; }
+
+  footer { font-size: 11.5px; color: var(--fg-muted); line-height: 1.5; padding-top: 6px; }
+  code { font-family: var(--font-mono); background: var(--panel-2); padding: 1px 5px; border-radius: 4px; font-size: 11px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div>
+    <span class="eyebrow">Console UX backlog — mock, not shipped</span>
+    <h1>Accessibility &amp; alerts</h1>
+    <p class="sub">A mock of the top three console asks from the Sep 2026 redesign
+      interviews: status-badge readability (Ambrose, Aunt Dot), dark mode (Kip),
+      and distinct per-responder alert colors (Kip). Toggle anything below — the
+      mock console beneath reacts live. Grounded in <code>00-rook/feedback/interviews/</code>;
+      built as a discussion aid, not tested with real handlers yet.</p>
+  </div>
+
+  <div class="panel">
+    <h2>Appearance</h2>
+    <div class="row">
+      <div>
+        <div class="row-label">Dark mode</div>
+        <div class="row-desc">Kip, every interview he's given: "It's 11pm... the console is
+          this wall of white light in the middle of my face." Tried the OS color-filter
+          workaround and called it unusable. An actual theme, not a filter.</div>
+      </div>
+      <button class="switch" id="darkToggle" data-on="false" aria-label="Toggle dark mode"></button>
+    </div>
+    <div class="row">
+      <div>
+        <div class="row-label">Status text size</div>
+        <div class="row-desc">Ambrose: "cannot tell engaged from available without leaning
+          in." Aunt Dot, independently: can't tell if something changed from a normal
+          standing distance. Same element, two unprompted reports.</div>
+      </div>
+      <div class="segmented" id="sizeSeg">
+        <button data-size="13px" class="active">Default</button>
+        <button data-size="17px">Large</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Alerts</h2>
+    <div class="row">
+      <div>
+        <div class="row-label">Distinct color/tone per responder</div>
+        <div class="row-desc">Kip, managing two responders: "both just go 'bing' and I have
+          to actually look to know which one." Auto-assigned when a responder is added —
+          no manual setup, since this gets used at 2am.</div>
+      </div>
+      <button class="switch" id="alertToggle" data-on="false" aria-label="Toggle distinct alert colors"></button>
+    </div>
+    <div class="row">
+      <div>
+        <div class="row-label">Warn on filter reset</div>
+        <div class="row-desc">Ambrose: filter persistence (shipped in 4.2) has silently
+          reverted to default twice; he didn't notice for 15 minutes. "I'd rather it warned
+          me the filter had reset than simply reset it." This is a reliability bug in a
+          shipped feature, not a new design ask — route to engineering either way.</div>
+      </div>
+      <button class="switch" id="filterToggle" data-on="false" aria-label="Simulate a filter reset"></button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Mock console <span class="tag">live preview</span></h2>
+    <div class="mock-console">
+      <div class="filter-note" id="filterNote">⚠ Your coverage filter just reset to default — your previous filter (structural-entry, flight) was not restored automatically.</div>
+      <div class="card">
+        <span class="alert-dot" id="dot1" style="background:var(--fg-muted);"></span>
+        <div style="flex:1;">
+          <div class="name">Meteor Mite</div>
+          <div class="tags">cold-weather · structural-entry</div>
+        </div>
+        <span class="status-badge available" id="badge1">AVAILABLE</span>
+      </div>
+      <div class="card">
+        <span class="alert-dot" id="dot2" style="background:var(--fg-muted);"></span>
+        <div style="flex:1;">
+          <div class="name">The Gale</div>
+          <div class="tags">flight · aquatic</div>
+        </div>
+        <span class="status-badge engaged" id="badge2">ENGAGED</span>
+      </div>
+      <span class="legend-pill">capability tag legend — pinned, not in a drawer (Ambrose's ask, lower priority)</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Coming next <span class="tag">proposed, not built</span></h2>
+    <p class="sub" style="margin-top:-6px;">Marked here on purpose rather than left out
+      silently — "flagged" isn't the same as "acted on," and that gap showed up more than
+      once in earlier prototype feedback too.</p>
+    <div class="deferred">
+      <div class="deferred-item">
+        <span class="mark">PROPOSED</span>
+        <div>
+          <strong>Notify the handler too, not just the responder's phone</strong>
+          <p>Aunt Dot: she hears the offer arrive on the responder's phone through a
+            ceiling, not on her own screen. A second notification recipient is a bigger
+            feature than a toggle — needs scoping before it goes on a release.</p>
+        </div>
+      </div>
+      <div class="deferred-item">
+        <span class="mark">PROPOSED</span>
+        <div>
+          <strong>Supply-side asks (Halloran)</strong>
+          <p>Requisition approval queue has no real prioritization, field failure reports
+            get no feedback loop, catalog search has no category filters. Not console,
+            not Dispatch — passing to whoever owns Supply.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Built from 4 interviews (Ambrose, Aunt Dot, Halloran, Kip) and a full read of all 25
+    support tickets, which raised none of these themes. Qualitative only — there's no
+    console usage data in the repo to check this against, unlike the separate 4.2 routing
+    investigation. See <code>console-ux-brief.md</code> in this folder for sourcing,
+    confidence (55/100), and what's deliberately out of scope here.
+  </footer>
+
+</div>
+
+<script>
+  var root = document.documentElement;
+  var darkToggle = document.getElementById('darkToggle');
+  darkToggle.addEventListener('click', function () {
+    var on = darkToggle.getAttribute('data-on') === 'true';
+    darkToggle.setAttribute('data-on', String(!on));
+    root.setAttribute('data-theme', !on ? 'dark' : 'light');
+  });
+
+  var sizeSeg = document.getElementById('sizeSeg');
+  sizeSeg.querySelectorAll('button').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      sizeSeg.querySelectorAll('button').forEach(function (b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      root.style.setProperty('--status-size', btn.getAttribute('data-size'));
+    });
+  });
+
+  var alertToggle = document.getElementById('alertToggle');
+  var dot1 = document.getElementById('dot1');
+  var dot2 = document.getElementById('dot2');
+  alertToggle.addEventListener('click', function () {
+    var on = alertToggle.getAttribute('data-on') === 'true';
+    alertToggle.setAttribute('data-on', String(!on));
+    if (!on) {
+      dot1.style.background = 'var(--accent)';
+      dot2.style.background = '#c77dff';
+    } else {
+      dot1.style.background = 'var(--fg-muted)';
+      dot2.style.background = 'var(--fg-muted)';
+    }
+  });
+
+  var filterToggle = document.getElementById('filterToggle');
+  var filterNote = document.getElementById('filterNote');
+  filterToggle.addEventListener('click', function () {
+    var on = filterToggle.getAttribute('data-on') === 'true';
+    filterToggle.setAttribute('data-on', String(!on));
+    filterNote.classList.toggle('show', !on);
+  });
+</script>
+</body>
+</html>

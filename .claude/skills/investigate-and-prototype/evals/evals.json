@@ -1,0 +1,47 @@
+{
+  "skill_name": "investigate-and-prototype",
+  "evals": [
+    {
+      "id": 0,
+      "name": "supply-requisition-queue",
+      "prompt": "Supply's requisition approval queue is way slower than usual and Halloran's complaining about it — can you figure out what's going on and put together a recommendation?",
+      "expected_output": "An investigation grounded in real repo sources (Halloran's interview, any relevant tickets/briefs) that reconciles his specific complaints against whatever structured evidence exists, forms a scoped recommendation, and is honest about what is and isn't confirmed by data versus only described qualitatively.",
+      "files": [],
+      "assertions": [
+        "Report cites Halloran's interview directly (e.g. the 11-day vest-plate example) rather than describing the complaint secondhand",
+        "Report explicitly flags that no structured/quantitative requisition-timing data exists in this repo, so the finding rests on one qualitative account, not confirmed statistically",
+        "Recommendation stays scoped to Supply/requisitions and does not fold in or relitigate the unrelated Dispatch 4.2 routing investigation",
+        "References at least one specific file path from the repo as a cited source",
+        "States an explicit confidence level, or explicitly separates what's confirmed from what's still an open question"
+      ]
+    },
+    {
+      "id": 1,
+      "name": "console-ux-stakeholder-brief",
+      "prompt": "Our director wants to know what's going on with the handler console complaints (readability, dark mode, alerts) — put together a brief and something I can show her.",
+      "expected_output": "A stakeholder-ready brief grounded in the real interview transcripts, correctly scoped as console/UX debt separate from the 4.2 root-cause investigation, with a prototype or mockup to show, and a clear breakdown of what the director actually asked for versus the proposed answer.",
+      "files": [],
+      "assertions": [
+        "Output separates 'what the director asked for' from 'the proposed answer' as distinct, identifiable sections or files, not blended into one",
+        "Cites at least two of the four interview sources (Ambrose, Aunt Dot, Halloran, Kip) with a direct quote about console UX",
+        "Names dark mode as Kip's specific, repeatedly-raised ask, not a generic UX item",
+        "Explicitly distinguishes this console-UX work from the 4.2 routing root-cause investigation, instead of conflating them as the same problem",
+        "Produces an actual prototype/mockup file (not just a text description of what one would look like)"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "dispatch-acceptance-drop-cold",
+      "prompt": "Acceptance rate for Dispatch dropped after the August release and nobody can agree on why — can you dig in and tell me what's actually going on, and what we should do about it?",
+      "expected_output": "An investigation that reads the real CSV directly rather than trusting the pooled headline rate, discovers that a small number of responders collapsed toward zero offers while the rest absorbed more volume (the pooled-average artifact), reconciles this against tickets/interviews, and produces a confidence-scored recommendation plus something built to show for it.",
+      "files": [],
+      "assertions": [
+        "Report computes real numbers directly from callout-history.csv (not just describing the drop qualitatively)",
+        "Identifies that a small subset of responders (not all 16) collapsed toward near-zero offers, and that the pooled/aggregate rate recovering is an artifact of that subset dropping out of the denominator",
+        "States an explicit numeric confidence score for its conclusion",
+        "Cross-checks at least one specific ticket claim against the real CSV data and states explicitly whether it's confirmed or contradicted",
+        "Produces a recommendation plus a built prototype/mockup, not analysis alone"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "eval_id": 0,
+  "eval_name": "supply-requisition-queue",
+  "configuration": "with_skill",
+  "expectations": [
+    {"text": "Report cites Halloran's interview directly (e.g. the 11-day vest-plate example) rather than describing the complaint secondhand", "passed": true, "evidence": "report.md quotes the 11-day wait for a cracked vest plate and 'doesn't matter if it's laces or plate' directly from halloran.txt."},
+    {"text": "Report explicitly flags that no structured/quantitative requisition-timing data exists in this repo, so the finding rests on one qualitative account, not confirmed statistically", "passed": true, "evidence": "Phase 2 explicitly states 'No Supply quantitative data exists anywhere in this repo'; confidence section ties the 25/100 score directly to this absence."},
+    {"text": "Recommendation stays scoped to Supply/requisitions and does not fold in or relitigate the unrelated Dispatch 4.2 routing investigation", "passed": true, "evidence": "Recommendation explicitly states 'the right next step is not a Dispatch-side root-cause fix' and routes the finding to Supply/Helen without touching 4.2."},
+    {"text": "References at least one specific file path from the repo as a cited source", "passed": true, "evidence": "Cites halloran.txt, supply-one-pager.pdf, roadmap-q3.pdf, release-history.pdf, who-does-what.xlsx, all 25 tickets, callout-history.csv, and the dispatch-routing code folder."},
+    {"text": "States an explicit confidence level, or explicitly separates what's confirmed from what's still an open question", "passed": true, "evidence": "Explicit numeric score: 'Confidence: 25/100', with a named highest-leverage missing data point."}
+  ]
+}

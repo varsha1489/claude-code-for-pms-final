@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Requisition Triage — illustrative concept</title>
+<style>
+  :root{
+    --bg:#f7f6f3; --panel:#ffffff; --ink:#1f2420; --muted:#6b7570;
+    --line:#e3e0d8; --accent:#2f5d50; --urgent:#b3432b; --warn:#b98b1f;
+    --ok:#4a7c59; --assumed:#9b6b2c; --assumed-bg:#fbf1dd;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#17191b; --panel:#1f2224; --ink:#eceae5; --muted:#9aa29c;
+      --line:#33373a; --accent:#79b49c; --urgent:#e08a73; --warn:#e3bb63;
+      --ok:#8fc29c; --assumed:#e3bb63; --assumed-bg:#332a16;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#17191b; --panel:#1f2224; --ink:#eceae5; --muted:#9aa29c;
+    --line:#33373a; --accent:#79b49c; --urgent:#e08a73; --warn:#e3bb63;
+    --ok:#8fc29c; --assumed:#e3bb63; --assumed-bg:#332a16;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    padding:16px;
+  }
+  .wrap{max-width:860px;margin:0 auto;}
+  header{margin-bottom:18px;}
+  h1{font-size:1.35rem;margin:0 0 6px;}
+  .sub{color:var(--muted);font-size:0.92rem;line-height:1.5;max-width:68ch;}
+  .banner{
+    background:var(--assumed-bg); color:var(--assumed); border:1px solid var(--assumed);
+    border-radius:8px; padding:10px 14px; font-size:0.85rem; margin:14px 0 22px; line-height:1.5;
+  }
+  .banner b{display:block; margin-bottom:2px;}
+  .toggle{
+    display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;
+  }
+  .toggle button{
+    border:1px solid var(--line); background:var(--panel); color:var(--ink);
+    padding:7px 14px; border-radius:20px; font-size:0.85rem; cursor:pointer;
+  }
+  .toggle button.active{background:var(--accent); color:#fff; border-color:var(--accent);}
+  .cols{display:grid; grid-template-columns:1fr; gap:16px;}
+  @media(min-width:680px){.cols{grid-template-columns:1fr 1fr;}}
+  .panel{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:14px 16px;
+  }
+  .panel h2{font-size:0.95rem; margin:0 0 4px;}
+  .panel .meta{color:var(--muted); font-size:0.78rem; margin-bottom:12px;}
+  .row{
+    display:flex; align-items:center; gap:10px; padding:9px 0;
+    border-top:1px solid var(--line); font-size:0.85rem;
+  }
+  .row:first-of-type{border-top:none;}
+  .tag{
+    font-size:0.68rem; font-weight:600; padding:2px 8px; border-radius:10px;
+    white-space:nowrap; color:#fff;
+  }
+  .tag.urgent{background:var(--urgent);}
+  .tag.warn{background:var(--warn); color:#2a2a2a;}
+  .tag.ok{background:var(--ok);}
+  .item{flex:1; min-width:0;}
+  .item .name{font-weight:600;}
+  .item .wait{color:var(--muted); font-size:0.78rem;}
+  .assumed-mark{
+    font-size:0.68rem; color:var(--assumed); border:1px solid var(--assumed);
+    border-radius:4px; padding:0 4px; margin-left:4px;
+  }
+  .foot{margin-top:22px; font-size:0.8rem; color:var(--muted); line-height:1.6;}
+  .foot b{color:var(--ink);}
+  .source{
+    margin-top:18px; padding:12px 14px; border:1px dashed var(--line); border-radius:10px;
+    font-size:0.82rem; color:var(--muted); line-height:1.55;
+  }
+  .source b{color:var(--ink);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Requisition queue — illustrative concept only</h1>
+    <div class="sub">A sketch of what priority-aware triage could look like, built
+      from a single account (Halloran, 5 Sep 2026 interview). Not a spec, not
+      based on real queue data — Supply already has a committed roadmap item
+      ("Requisition approval chains," 4.3) that may address this differently.</div>
+  </header>
+
+  <div class="banner">
+    <b>Every number and item below is assumed / illustrative.</b>
+    No real Supply requisition data exists in this repo. The only grounded
+    fact is Halloran's account: a cracked vest plate sat 11 days on a
+    quartermaster signature, and setting the priority flag had no visible
+    effect on where it sat in the queue.
+  </div>
+
+  <div class="toggle">
+    <button class="active" id="btn-today">Today (as described)</button>
+    <button id="btn-concept">Concept (tiered)</button>
+  </div>
+
+  <div class="cols">
+    <div class="panel">
+      <h2>Single queue <span class="assumed-mark">illustrative</span></h2>
+      <div class="meta">Everything in submission order — grounded in Halloran's
+        description: "one queue, everything in it, doesn't matter if it's
+        laces or plate."</div>
+      <div id="queue-today"></div>
+    </div>
+    <div class="panel">
+      <h2>Tiered by urgency <span class="assumed-mark">concept, not built</span></h2>
+      <div class="meta">Illustrative only — shows what differentiating by a
+        real urgency signal (e.g. "degraded protective gear" vs. routine
+        resupply) could look like. Not based on any approved design.</div>
+      <div id="queue-concept"></div>
+    </div>
+  </div>
+
+  <div class="source">
+    <b>Grounded in:</b> Halloran interview transcript, 5 Sep 2026
+    (<code>00-rook/feedback/interviews/halloran.txt</code>) — "I put in for
+    a replacement vest plate three weeks ago — cracked one, not cosmetic, a
+    real crack — and it sat waiting on a quartermaster signature for eleven
+    days... There's a priority field. I set it. Doesn't seem to change
+    anything about how fast it actually moves."
+  </div>
+
+  <div class="foot">
+    <b>What's real vs. assumed:</b> the vest-plate example and the
+    "priority field doesn't change order" complaint are Halloran's own
+    words. The other queue items, wait times, and the tiered-queue concept
+    itself are invented to illustrate the idea — none of it should be read
+    as a measurement or a committed design. See <code>brief.md</code> and
+    <code>synthesis.md</code> for what's actually known versus guessed.
+  </div>
+</div>
+
+<script>
+const today = [
+  {name:"Boot laces (spare set)", wait:"2 days", tag:"ok", label:"OK"},
+  {name:"Vest plate — cracked (Halloran / Bulwark)", wait:"11 days", tag:"urgent", label:"URGENT", assumed:false},
+  {name:"Radio pouch replacement", wait:"4 days", tag:"ok", label:"OK"},
+  {name:"Cold-weather liner, size M", wait:"6 days", tag:"warn", label:"ROUTINE"},
+  {name:"Hazmat glove resupply", wait:"9 days", tag:"warn", label:"ROUTINE"},
+];
+const concept = [
+  {name:"Vest plate — cracked (Halloran / Bulwark)", wait:"same day", tag:"urgent", label:"SAFETY-CRITICAL"},
+  {name:"Hazmat glove resupply", wait:"2 days", tag:"warn", label:"DEGRADED GEAR"},
+  {name:"Cold-weather liner, size M", wait:"3 days", tag:"warn", label:"DEGRADED GEAR"},
+  {name:"Radio pouch replacement", wait:"5 days", tag:"ok", label:"ROUTINE"},
+  {name:"Boot laces (spare set)", wait:"6 days", tag:"ok", label:"ROUTINE"},
+];
+
+function render(list, elId){
+  const el = document.getElementById(elId);
+  el.innerHTML = list.map(i => `
+    <div class="row">
+      <span class="tag ${i.tag}">${i.label}</span>
+      <span class="item">
+        <span class="name">${i.name}</span><br>
+        <span class="wait">waiting ${i.wait}${i.assumed===false ? '' : ' <span class="assumed-mark">assumed</span>'}</span>
+      </span>
+    </div>`).join("");
+}
+render(today, "queue-today");
+render(concept, "queue-concept");
+
+document.getElementById("btn-today").addEventListener("click", function(){
+  this.classList.add("active");
+  document.getElementById("btn-concept").classList.remove("active");
+});
+document.getElementById("btn-concept").addEventListener("click", function(){
+  this.classList.add("active");
+  document.getElementById("btn-today").classList.remove("active");
+});
+</script>
+</body>
+</html>

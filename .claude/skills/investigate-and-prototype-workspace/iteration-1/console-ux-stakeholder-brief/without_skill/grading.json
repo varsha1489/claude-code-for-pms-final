@@ -1,0 +1,12 @@
+{
+  "eval_id": 1,
+  "eval_name": "console-ux-stakeholder-brief",
+  "configuration": "without_skill",
+  "expectations": [
+    {"text": "Output separates 'what the director asked for' from 'the proposed answer' as distinct, identifiable sections or files, not blended into one", "passed": false, "evidence": "brief.md headers run straight from 'Bottom line' into findings ('Where this came from', 'What was actually said') with no dedicated section restating the original ask before answering it — the ask and the answer are blended, not separated."},
+    {"text": "Cites at least two of the four interview sources (Ambrose, Aunt Dot, Halloran, Kip) with a direct quote about console UX", "passed": true, "evidence": "brief.md includes a 'Dark mode — one request, strongly felt' section and separate readability/alert-routing sections citing Kip, Ambrose, and Aunt Dot."},
+    {"text": "Names dark mode as Kip's specific, repeatedly-raised ask, not a generic UX item", "passed": true, "evidence": "Dedicated section header 'Dark mode — one request, strongly felt' names it as Kip's specific ask."},
+    {"text": "Explicitly distinguishes this console-UX work from the 4.2 routing root-cause investigation, instead of conflating them as the same problem", "passed": true, "evidence": "Explicit 'What this is not' section: 'Not a routing or acceptance-rate problem. That's the 4.2 investigation (separate, already in progress)... Don't let this list get folded into that one.'"},
+    {"text": "Produces an actual prototype/mockup file (not just a text description of what one would look like)", "passed": true, "evidence": "console-ux-concept.html exists (8.3KB), confirmed opened and tested in-browser per the agent's own report."}
+  ]
+}
