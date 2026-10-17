@@ -270,6 +270,36 @@ rounds of simulated feedback in character as the most-affected responders
   still isn't explained by scoring at all, so the Ravi proximity-data ask
   remains the open item.
 
+### Sidekicks: reusable skills (Module 6, 17 Oct 2026)
+Turned the investigate → synthesize → prototype → package method from the
+4.2 work into a project-scoped skill, plus a second one for catching a
+specific failure mode in anything written for a stakeholder:
+- **`investigate-and-prototype`** (`.claude/skills/investigate-and-prototype/`)
+  — the full 10-phase method, generalized so it's reusable on the next
+  incident, not just 4.2. Ran a full eval loop (3 test cases, with-skill vs.
+  no-skill): 100% pass rate with the skill vs. 80% without, but at roughly
+  2x the time and tokens — worth knowing before reaching for it on something
+  small. Where the baseline failed, it was always on the same things:
+  no stated numeric confidence, no named ticket-vs-data contradiction, no
+  prototype produced at all. Results and benchmark are in
+  `.claude/skills/investigate-and-prototype-workspace/iteration-1/`.
+- **`review-checklist`** (`.claude/skills/review-checklist/`) — a fast
+  four-point structural pass on any brief/proposal/one-pager: named owner,
+  stated success criteria, consistent scope start to finish, problem
+  explained before the fix. Run it before anything goes to Helen or another
+  stakeholder. Running it on `05-super-speed/brief.md` caught exactly one
+  real gap — no way to tell later whether Second Chance worked — which is
+  now fixed in that file (a "How we'll know it worked" section tied to the
+  known +0.08 accept score, since one guaranteed offer alone doesn't prove
+  the trap actually broke).
+- A recurring scheduled task (`weekly-review-checklist`, Mondays ~8:28am)
+  now runs `review-checklist` automatically against anything new or changed
+  in the repo and reports back — set up as a standing habit, not tied to
+  any brief being ready yet. It lives in the app's own scheduler
+  (`~/.claude/scheduled-tasks/`), outside this directory, since a scheduled
+  task can't itself be a file inside the repo — but its instructions keep
+  it scoped to read/write only within this project.
+
 ### Roadmap loose ends (Q3 roadmap, rev. 30 Jun)
 - **Availability Confidence**, a confidence score shown next to stated availability
   and driven by support escalations, was *committed* for 4.2 but **does not appear in
