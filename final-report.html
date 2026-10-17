@@ -1,0 +1,553 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ROOK DISPATCH :: RELEASE 4.2 — THE QUEST LOG</title>
+<meta name="description" content="A retro-arcade retelling of the Release 4.2 investigation: what broke, what proves it, the fix, and the skill that guards against it happening again.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0820;
+    --bg2: #120f33;
+    --panel: #1a1650;
+    --panel-line: #342a7a;
+    --cyan: #2ff3ff;
+    --magenta: #ff2fd6;
+    --yellow: #ffe94a;
+    --green: #39ff6a;
+    --red: #ff3b3b;
+    --orange: #ff8a2f;
+    --text: #e7e6ff;
+    --dim: #9a93d6;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+  h1,h2,h3,.pixel{
+    font-family: 'Press Start 2P', monospace;
+  }
+  a{color: var(--cyan);}
+
+  /* CRT scanline + vignette overlay */
+  .crt{
+    position: fixed; inset: 0; pointer-events: none; z-index: 999;
+    background:
+      repeating-linear-gradient(
+        to bottom,
+        rgba(255,255,255,0.035) 0px,
+        rgba(255,255,255,0.035) 1px,
+        transparent 2px,
+        transparent 4px
+      ),
+      radial-gradient(ellipse at center, rgba(0,0,0,0) 60%, rgba(0,0,0,0.55) 100%);
+    mix-blend-mode: overlay;
+  }
+  .flicker{
+    position: fixed; inset:0; pointer-events:none; z-index: 998;
+    background: rgba(255,255,255,0.015);
+    animation: flicker 6s infinite;
+  }
+  @keyframes flicker{
+    0%,100%{opacity:0;} 48%{opacity:0;} 50%{opacity:1;} 52%{opacity:0;}
+  }
+
+  .wrap{ max-width: 980px; margin: 0 auto; padding: 0 18px 80px; }
+
+  /* ---------- Title / hero ---------- */
+  .hero{
+    min-height: 100vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding: 40px 18px;
+    background:
+      linear-gradient(180deg, var(--bg) 0%, var(--bg2) 60%, var(--bg) 100%);
+    position: relative;
+    border-bottom: 4px solid var(--magenta);
+  }
+  .hero .stars{
+    position:absolute; inset:0; overflow:hidden; z-index:0;
+  }
+  .star{
+    position:absolute; width:3px; height:3px; background: var(--text); opacity:.8;
+    animation: twinkle 2.4s infinite ease-in-out;
+  }
+  @keyframes twinkle{ 0%,100%{opacity:.15;} 50%{opacity:1;} }
+
+  .hero-inner{ position:relative; z-index:1; }
+  .kicker{
+    font-size: 11px; color: var(--yellow); letter-spacing: 2px; margin-bottom: 18px;
+    text-shadow: 2px 2px 0 #000;
+  }
+  .title{
+    font-size: clamp(22px, 5vw, 42px);
+    color: var(--cyan);
+    text-shadow: 3px 3px 0 var(--magenta), 6px 6px 0 #000;
+    margin: 0 0 14px;
+    line-height: 1.4;
+  }
+  .subtitle{
+    font-family:'VT323', monospace; font-size: 26px; color: var(--text); margin: 0 0 30px;
+    max-width: 640px;
+  }
+  .insert-coin{
+    font-size: 14px; color: var(--yellow);
+    animation: blink 1.1s steps(1) infinite;
+    margin-top: 10px;
+    text-shadow: 2px 2px 0 #000;
+  }
+  @keyframes blink{ 50%{ opacity: 0; } }
+
+  .press-start{
+    display:inline-block; margin-top: 28px;
+    background: var(--magenta); color:#fff; border: 4px solid #fff;
+    padding: 14px 28px; font-family:'Press Start 2P'; font-size: 13px;
+    text-decoration:none; box-shadow: 0 0 0 4px #000, 6px 6px 0 #000;
+    transition: transform .08s ease;
+  }
+  .press-start:hover{ transform: translate(2px,2px); box-shadow: 0 0 0 4px #000, 2px 2px 0 #000; }
+
+  /* ---------- Section shells ---------- */
+  section{ padding: 70px 0 20px; position:relative; }
+  .level-tag{
+    display:inline-block; background:var(--yellow); color:#000; font-family:'Press Start 2P';
+    font-size: 11px; padding: 6px 10px; margin-bottom: 14px; box-shadow: 4px 4px 0 #000;
+  }
+  h2.section-title{
+    font-size: clamp(16px,3.4vw,24px); color:#fff; margin: 0 0 24px;
+    text-shadow: 3px 3px 0 var(--panel-line);
+  }
+  .panel{
+    background: var(--panel); border: 3px solid var(--panel-line);
+    box-shadow: 6px 6px 0 #000;
+    padding: 22px 22px 18px;
+    margin-bottom: 26px;
+    position:relative;
+  }
+  .panel::before{
+    content:""; position:absolute; top:-3px; left:-3px; right:-3px; bottom:-3px;
+    border: 2px dashed rgba(255,255,255,0.08); pointer-events:none;
+  }
+  .panel h3{ margin-top:0; font-size: 13px; color: var(--cyan); }
+  .finding{ color: var(--text); margin: 10px 0 14px; }
+  .finding b{ color: var(--yellow); }
+  .prompt-box{
+    background:#000; border: 2px solid var(--green); padding: 12px 14px;
+    color: var(--green); font-size: 17px; border-radius: 2px;
+    position: relative; margin-top: 10px;
+  }
+  .prompt-box::before{
+    content: "> PLAYER INPUT"; display:block; font-family:'Press Start 2P'; font-size: 9px;
+    color: var(--green); opacity:.8; margin-bottom: 8px; letter-spacing: 1px;
+  }
+  .badge-row{ display:flex; gap:10px; flex-wrap:wrap; margin-top: 10px; }
+  .badge{
+    font-family:'Press Start 2P'; font-size: 9px; padding: 6px 8px;
+    background:#000; border:2px solid var(--magenta); color:var(--magenta);
+  }
+
+  /* progress / health bars */
+  .bar-label{ display:flex; justify-content:space-between; font-size:16px; margin-bottom:4px; color:var(--dim); }
+  .bar{
+    height: 22px; background:#000; border:3px solid #fff; box-shadow: 3px 3px 0 #000;
+    overflow:hidden; margin-bottom: 18px;
+  }
+  .bar-fill{ height:100%; }
+  .fill-green{ background: repeating-linear-gradient(90deg, var(--green), var(--green) 8px, #0d4d23 8px, #0d4d23 10px); }
+  .fill-red{ background: repeating-linear-gradient(90deg, var(--red), var(--red) 8px, #5a0d0d 8px, #5a0d0d 10px); }
+  .fill-yellow{ background: repeating-linear-gradient(90deg, var(--yellow), var(--yellow) 8px, #5a4d0d 8px, #5a4d0d 10px); }
+
+  /* grid of stat cards */
+  .stat-grid{ display:grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap:14px; margin: 18px 0; }
+  .stat-card{
+    background:#000; border: 3px solid var(--cyan); padding: 12px; text-align:center;
+  }
+  .stat-card .num{ font-family:'Press Start 2P'; font-size: 20px; color: var(--yellow); display:block; margin-bottom:6px; }
+  .stat-card .lbl{ font-size: 13px; color: var(--dim); }
+
+  /* responder roster */
+  .roster{ display:grid; grid-template-columns: repeat(auto-fit,minmax(160px,1fr)); gap: 12px; margin: 16px 0; }
+  .card{
+    background:#000; border: 3px solid var(--panel-line); padding: 10px; text-align:center;
+  }
+  .card.ko{ border-color: var(--red); }
+  .card .name{ color:#fff; font-size: 16px; }
+  .card .hp{ font-size: 13px; color: var(--red); font-family:'Press Start 2P'; margin-top:4px; }
+  .card.ok .hp{ color: var(--green); }
+
+  table.retro{ width:100%; border-collapse: collapse; margin: 14px 0; font-size:17px; }
+  table.retro th, table.retro td{ border: 2px solid var(--panel-line); padding: 8px 10px; text-align:left; }
+  table.retro th{ background:#000; color: var(--yellow); font-family:'Press Start 2P'; font-size: 10px; }
+  table.retro tr:nth-child(even) td{ background: rgba(255,255,255,0.03); }
+
+  .quote{
+    border-left: 4px solid var(--magenta); padding: 6px 0 6px 14px; margin: 12px 0;
+    color: var(--text); font-style: italic;
+  }
+
+  iframe.prototype-frame{
+    width: 100%; height: 560px; border: 4px solid var(--cyan); background:#fff;
+    box-shadow: 6px 6px 0 #000;
+  }
+  .frame-caption{ text-align:center; font-size: 14px; color: var(--dim); margin-top: 8px; }
+
+  .nav-pips{
+    display:flex; gap:8px; justify-content:center; flex-wrap:wrap; margin: 10px 0 0;
+  }
+  .nav-pips a{
+    font-family:'Press Start 2P'; font-size: 9px; color: var(--bg); background: var(--cyan);
+    padding: 7px 9px; text-decoration:none; border: 2px solid #000;
+  }
+  .nav-pips a:hover{ background: var(--yellow); }
+
+  footer{
+    text-align:center; padding: 50px 20px 80px; color: var(--dim); font-size:15px;
+  }
+  footer .pixel{ font-size: 12px; color: var(--yellow); margin-bottom: 10px; }
+
+  .divider{
+    height: 6px; margin: 10px 0 36px;
+    background: repeating-linear-gradient(90deg, var(--magenta) 0 12px, var(--cyan) 12px 24px);
+  }
+
+  @media (max-width: 560px){
+    .panel{ padding: 16px; }
+    iframe.prototype-frame{ height: 420px; }
+  }
+</style>
+</head>
+<body>
+<div class="crt"></div>
+<div class="flicker"></div>
+
+<!-- ===================== HERO / TITLE SCREEN ===================== -->
+<div class="hero" id="top">
+  <div class="stars" id="stars"></div>
+  <div class="hero-inner">
+    <div class="kicker">ROOK INDUSTRIES PRESENTS</div>
+    <h1 class="title">RELEASE 4.2<br>THE QUEST LOG</h1>
+    <p class="subtitle">A field report on what broke, who it broke, the evidence
+      across six levels of investigation, the fix now live, and the perk that
+      keeps this boss from respawning.</p>
+    <div class="nav-pips">
+      <a href="#boss">THE BOSS</a>
+      <a href="#levels">THE LEVELS</a>
+      <a href="#fix">THE FIX</a>
+      <a href="#perks">THE PERKS</a>
+      <a href="#ending">ENDING</a>
+    </div>
+    <a href="#boss" class="press-start">▶ PRESS START</a>
+    <div class="insert-coin">INSERT COIN — 1 PLAYER (NEW PM) — CONTINUE?</div>
+  </div>
+</div>
+
+<div class="wrap">
+
+<!-- ===================== THE BOSS: WHAT HAPPENED ===================== -->
+<section id="boss">
+  <span class="level-tag">BOSS FIGHT</span>
+  <h2 class="section-title">WHAT ACTUALLY HAPPENED WITH RELEASE 4.2</h2>
+
+  <div class="panel">
+    <h3>THE PLAIN VERSION</h3>
+    <p class="finding">On <b>12 Aug 2026</b>, Dispatch shipped three changes at once: it weighted
+      <b>proximity up and recent-acceptance-history down</b> in the ranking formula, it cut the
+      callout timeout from <b>90 seconds to 60</b>, and it added a cosmetic console filter fix.
+      Afterwards, callout tickets ran <b>about 3× normal</b>, and the acceptance rate — the
+      headline number everyone watches — looked like it dipped and then came back.</p>
+    <p class="finding">It didn't come back. <b>Four responders</b> — Farlight, Meteor Mite,
+      The Undertow, and Vesper — collapsed from ~12 offers a week to 0–1, and dropped almost
+      entirely out of the weekly average. The other twelve responders absorbed their volume,
+      which is why the <i>pooled</i> number looked like it recovered. The real,
+      per-responder average never did.</p>
+
+    <div class="bar-label"><span>POOLED ACCEPTANCE (the number everyone was shown)</span><span>0.77 → 0.54 → 0.73</span></div>
+    <div class="bar"><div class="bar-fill fill-green" style="width:73%"></div></div>
+
+    <div class="bar-label"><span>REAL UNWEIGHTED AVERAGE (what actually happened)</span><span>0.59 — never recovered</span></div>
+    <div class="bar"><div class="bar-fill fill-red" style="width:59%"></div></div>
+
+    <p class="finding" style="margin-top:14px;">That gap is the whole boss fight: a shield
+      that looks like it regenerated, standing in front of four responders who took real,
+      lasting damage.</p>
+  </div>
+
+  <div class="panel">
+    <h3>THE FOUR WHO WENT DOWN</h3>
+    <div class="roster">
+      <div class="card ko"><div class="name">Farlight</div><div class="hp">HP: 0–1/12</div></div>
+      <div class="card ko"><div class="name">Meteor Mite</div><div class="hp">HP: 0–1/12</div></div>
+      <div class="card ko"><div class="name">The Undertow</div><div class="hp">HP: 0–1/12</div></div>
+      <div class="card ko"><div class="name">Vesper</div><div class="hp">HP: 0–1/12</div></div>
+      <div class="card ok"><div class="name">Other 12 Responders</div><div class="hp">DAMAGED, STANDING</div></div>
+    </div>
+    <p class="finding">Two of the four — <b>Meteor Mite and Vesper</b> — never filed a single
+      support ticket. They only turn up in interviews. Vesper previously had one of the
+      <b>best</b> acceptance records on the roster, which rules out "they were already
+      struggling" as the explanation.</p>
+  </div>
+
+  <div class="panel">
+    <h3>THE ACTUAL MECHANISM (not a hypothesis — read from the code)</h3>
+    <p class="finding">Rook's scoring has exactly one way up and one way down, and they are not
+      symmetric:</p>
+    <div class="stat-grid">
+      <div class="stat-card"><span class="num">+0.08</span><span class="lbl">accepting a job (the only way up)</span></div>
+      <div class="stat-card"><span class="num">−0.12</span><span class="lbl">a decline OR a timeout — scored identically</span></div>
+      <div class="stat-card"><span class="num">0%</span><span class="lbl">decay over time — a 2019 TODO, never fixed</span></div>
+    </div>
+    <p class="finding">4.2 didn't create this trap — it just dialed the timeout down and the
+      proximity weight up, which pushed a few responders low enough to fall into a hole with
+      no floor. <b>No logic changed</b> in <code>routing.py</code>, <code>offer.py</code>, or
+      <code>history.py</code> — just three numbers in <code>config.py</code>. Once ranked low,
+      a responder gets offered less, which drops their score further, which gets them offered
+      even less — and nothing in the code ever reverses it on its own.</p>
+    <div class="badge-row">
+      <span class="badge">5 AGENTS CONVERGED</span>
+      <span class="badge">SEASONALITY: RULED OUT</span>
+      <span class="badge">CONFIG-ONLY CHANGE</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===================== THE LEVELS ===================== -->
+<section id="levels">
+  <span class="level-tag">QUEST LOG</span>
+  <h2 class="section-title">SIX LEVELS TO GET HERE</h2>
+  <p class="finding" style="margin-bottom:28px;">Each level below is one real finding this
+    investigation turned up, and the exact prompt — typed by the Director's new PM, no
+    edits — that produced it.</p>
+
+  <!-- LEVEL 1 -->
+  <div class="panel">
+    <span class="level-tag" style="background:var(--cyan);">LEVEL 1 — ORIGIN STORY</span>
+    <h3>FINDING: the handover pointed the wrong way</h3>
+    <p class="finding">Priya's handover sends the new PM to Marcus for acceptance numbers —
+      but the real official weekly series belongs to <b>Ravi</b>, and Marcus himself warned his
+      own pull would be "rough." Getting this wrong at the start would have meant building an
+      entire investigation on the wrong data source.</p>
+    <div class="prompt-box">What's contradictory or missing, not just in the company documents,
+      but across Rook's wiki, its database, and the files in my repo?</div>
+  </div>
+
+  <!-- LEVEL 2 -->
+  <div class="panel">
+    <span class="level-tag" style="background:var(--cyan);">LEVEL 2 — SUPER HEARING</span>
+    <h3>FINDING: the interviews weren't about 4.2 — and brought it up anyway</h3>
+    <p class="finding">Four console-redesign interviews had nothing to do with routing. <b>Three
+      of the four handlers brought up callouts moving too fast anyway</b>, completely
+      unprompted — the first real signal that something in routing itself had changed, before
+      a single row of data had been opened.</p>
+    <div class="prompt-box">Read everything in 00-rook/feedback/interviews/. These are four
+      conversations with the people who run the console for our responders. Tell me what
+      they're unhappy about, group it, tell me how many of the four raised each thing, and
+      quote one line for each so I can hear how they actually said it.</div>
+  </div>
+
+  <!-- LEVEL 3 -->
+  <div class="panel">
+    <span class="level-tag" style="background:var(--cyan);">LEVEL 3 — REWIND</span>
+    <h3>FINDING: five independent agents, one converged answer</h3>
+    <p class="finding">Five separate analytical lenses — code mechanism, tickets vs. data,
+      interviews, redistribution patterns, timing — each built their own theory from this
+      repo alone, then argued it out. All five landed on the same mechanism: the 4.2 rebalance
+      plus a penalty that never decays, a self-reinforcing trap with no lens finding evidence
+      for Priya's "it's just August" theory.</p>
+    <div class="prompt-box">I want you to administer 5 agents, one to explore each area here.
+      I want these agents to debate each other on their findings, and then align on where they
+      feel is the root-cause to all of this. If they cannot align on that, at least help me
+      understand what information they need to better understand how we solve this?</div>
+  </div>
+
+  <!-- LEVEL 4 -->
+  <div class="panel">
+    <span class="level-tag" style="background:var(--cyan);">LEVEL 4 — X-RAY VISION</span>
+    <h3>FINDING: the exact lines that break the trap open — and close it forever</h3>
+    <p class="finding">Reading the code directly surfaced the asymmetric scoring: <b>one
+      function anywhere adds points</b> (accepting a job, +0.08); a decline or a timeout —
+      <b>treated identically</b> — subtracts 0.12, and nothing else ever moves a score back up.
+      This is the single piece of evidence that turned "acceptance dropped" into "here's exactly
+      why it can't recover on its own."</p>
+    <div class="prompt-box">Find me the part of this code that takes points off somebody when
+      they miss a ping or turn one down. Show it to me and explain it in plain English. Then
+      find me every single thing in this code that puts points back on.</div>
+  </div>
+
+  <!-- LEVEL 5 -->
+  <div class="panel">
+    <span class="level-tag" style="background:var(--cyan);">LEVEL 5 — SUPER SPEED</span>
+    <h3>FINDING + THE FIX: a brief that got built, not just written</h3>
+    <p class="finding">The investigation turned into an actual answer for the director: the
+      <b>Second Chance</b> proposal, plus three working prototypes built on real repo data —
+      not mockups. See the full build in the next section.</p>
+    <div class="prompt-box">our director of PM pinged me asking what we are going to do? help
+      me put together a brief.</div>
+  </div>
+
+  <!-- LEVEL 6 -->
+  <div class="panel">
+    <span class="level-tag" style="background:var(--cyan);">LEVEL 6 — SIDEKICKS</span>
+    <h3>FINDING: the method itself got turned into a permanent perk</h3>
+    <p class="finding">Rather than redo this whole investigation by hand next time something
+      breaks, the method became a reusable skill — and a second skill that catches the exact
+      kind of gap a rushed brief leaves behind. Covered in full under "The Perks" below.</p>
+    <div class="prompt-box">Make a skill called review-checklist. When I point it at a brief,
+      it checks that the brief names who owns it, says how we'll know it worked, keeps the same
+      scope from start to finish, and explains the problem before the fix.</div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===================== THE FIX ===================== -->
+<section id="fix">
+  <span class="level-tag" style="background:var(--green); color:#000;">ITEM ACQUIRED</span>
+  <h2 class="section-title">THE FIX: SECOND CHANCE</h2>
+  <div class="panel">
+    <h3>THE RULE</h3>
+    <p class="finding">If a responder gets <b>zero callout offers for 7 days</b>, the very next
+      callout that matches their capability tags <b>and</b> falls within a widened travel-range
+      safety check goes to them first — no ranking math, regardless of where they currently sit.
+      One real offer, guaranteed to arrive instead of maybe never arriving. It does not touch
+      the 4.2 weights themselves, and it is not mutual aid, a quota, or a permanent override.</p>
+    <div class="badge-row">
+      <span class="badge">7-DAY TRIGGER</span>
+      <span class="badge">TRAVEL-RANGE SAFEGUARD</span>
+      <span class="badge">EARLY-WARNING TIER</span>
+      <span class="badge">DOESN'T REVERSE 4.2</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>LIVE RIGHT NOW: THE MANUAL STOPGAP</h3>
+    <p class="finding">Second Chance needs engineering time. This doesn't — a handler can
+      trigger the same guarantee by hand, today, for the four responders who need it most.
+      Built on real data from this repo, refined through two rounds of in-character feedback
+      from the responders it's meant to help. Try it below:</p>
+    <iframe class="prototype-frame" src="05-super-speed/guaranteed-offer-override.html"
+      title="Guaranteed Offer Override prototype" loading="lazy"></iframe>
+    <div class="frame-caption">Live prototype — <code>05-super-speed/guaranteed-offer-override.html</code></div>
+  </div>
+
+  <div class="panel">
+    <h3>HOW WE'LL KNOW IT WORKED</h3>
+    <p class="finding">Accepting a guaranteed offer only moves a score up by <b>+0.08</b> — and
+      the four stuck responders sit at <b>0.0–0.12</b>. So the real check, a few weeks out, is
+      whether they keep getting offered <i>after</i> the guaranteed one, not just the one
+      courtesy job. If any of them take it and go quiet again, that's a sign the floor needs
+      the no-decay code fix paired with it — not that Second Chance failed.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===================== THE PERKS ===================== -->
+<section id="perks">
+  <span class="level-tag" style="background:var(--yellow); color:#000;">PERK UNLOCKED</span>
+  <h2 class="section-title">WHAT KEEPS THIS BOSS FROM RESPAWNING</h2>
+
+  <div class="panel">
+    <h3>PERK 1 — <code>investigate-and-prototype</code></h3>
+    <p class="finding">The whole method used across Levels 1–5 — get oriented, read the
+      evidence, reconcile what disagrees, read the mechanism, hypothesize, synthesize, give a
+      confidence-scored recommendation, build and test a prototype, package it for a
+      stakeholder — is now a saved skill, not a one-time run. It was put through a real eval:
+      three test cases, run both with and without the skill.</p>
+    <div class="stat-grid">
+      <div class="stat-card"><span class="num">100%</span><span class="lbl">pass rate WITH the skill</span></div>
+      <div class="stat-card"><span class="num">80%</span><span class="lbl">pass rate WITHOUT it</span></div>
+      <div class="stat-card"><span class="num">~2×</span><span class="lbl">time &amp; token cost of using it</span></div>
+    </div>
+    <p class="finding">Without the skill, the same three gaps kept showing up: no stated
+      numeric confidence, no named contradiction between a ticket and the real data, and no
+      prototype produced at all — exactly the three things that made this investigation worth
+      trusting.</p>
+  </div>
+
+  <div class="panel">
+    <h3>PERK 2 — <code>review-checklist</code></h3>
+    <p class="finding">A fast, four-point structural pass on any brief before it goes to a
+      stakeholder: does it name an owner, does it say how success will be measured, does the
+      scope stay the same from the opening framing to the closing ask, and does it explain the
+      problem before the fix. It already caught something real:</p>
+    <table class="retro">
+      <tr><th>CHECK</th><th>RESULT ON THE SECOND CHANCE BRIEF</th></tr>
+      <tr><td>Named owner</td><td>Partial — Wen named for engineering, not for the ask overall</td></tr>
+      <tr><td>Success criteria</td><td><b style="color:var(--red)">FAIL</b> — no way stated to tell later if it worked</td></tr>
+      <tr><td>Consistent scope</td><td>Pass — every addition explicitly flagged, nothing smuggled in</td></tr>
+      <tr><td>Problem before fix</td><td>Pass — two full sections of problem before the proposal</td></tr>
+    </table>
+    <p class="finding">That one Fail is now fixed in the brief itself — the "How we'll know it
+      worked" section above exists because this perk caught its absence.</p>
+  </div>
+
+  <div class="panel">
+    <h3>PERK 3 — standing patrol</h3>
+    <p class="finding">A recurring scheduled run, every Monday morning, applies
+      <code>review-checklist</code> automatically to anything new or changed in the repo and
+      reports back — a habit, not a one-off audit, so the next brief gets checked whether or
+      not anyone remembers to ask.</p>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ===================== ENDING ===================== -->
+<section id="ending">
+  <span class="level-tag" style="background:var(--magenta);">STAGE CLEAR</span>
+  <h2 class="section-title">CURRENT SCORE &amp; NEXT BOSS</h2>
+  <div class="panel">
+    <h3>CONFIDENCE IN THE OVERALL DIRECTION</h3>
+    <div class="bar-label"><span>SECOND CHANCE + NO-DECAY FIX</span><span>72 / 100</span></div>
+    <div class="bar"><div class="bar-fill fill-yellow" style="width:72%"></div></div>
+    <p class="finding">Sharp and data-backed on the mechanism — but two responders,
+      <b>Ashgrove and Halfmoon</b>, show the same declining trajectory and aren't explained by
+      scoring at all. That's the open boss: real location and travel-time data, requested from
+      Ravi, still hasn't come back. Second Chance works regardless of <i>why</i> someone went
+      quiet — but knowing why is still the thing standing between a good fix and a confirmed one.</p>
+  </div>
+  <div class="panel" style="text-align:center;">
+    <h3 class="pixel" style="color:var(--green);">GAME OVER? NO — TO BE CONTINUED</h3>
+    <p class="finding">The boss isn't dead. It's contained, it's explained, and for the first
+      time it's being watched. Next save point: Ravi's proximity data, the no-decay patch
+      shipping, and whatever the weekly patrol turns up.</p>
+  </div>
+</section>
+
+</div><!-- /wrap -->
+
+<footer>
+  <div class="pixel">★ ROOK DISPATCH ★</div>
+  Compiled from <code>CLAUDE.md</code> and all six <code>prompts.md</code> files in this repo.
+  Rook Industries is a fictional teaching scenario — Product School, "Claude Code for PMs"
+  (cohort ccpm-2026.1).
+</footer>
+
+<script>
+  // scatter a few twinkling stars behind the title screen — purely decorative
+  (function(){
+    var field = document.getElementById('stars');
+    if(!field) return;
+    var n = 60;
+    for(var i=0;i<n;i++){
+      var s = document.createElement('div');
+      s.className = 'star';
+      s.style.left = (Math.random()*100) + '%';
+      s.style.top = (Math.random()*100) + '%';
+      s.style.animationDelay = (Math.random()*2.4) + 's';
+      field.appendChild(s);
+    }
+  })();
+</script>
+</body>
+</html>
